@@ -3,8 +3,7 @@ from typing import Any, Callable, Dict, ParamSpec
 import requests
 from google.protobuf.message import Message
 
-from .headers import (mobile_headers, mobile_protobuf_headers,
-                      mobile_url_encoded_headers)
+from .headers import mobile_headers, mobile_protobuf_headers, mobile_url_encoded_headers
 from .pack import *
 
 P = ParamSpec("P")

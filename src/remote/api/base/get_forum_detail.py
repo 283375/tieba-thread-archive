@@ -6,8 +6,7 @@ from yarl import URL
 
 from ....models.forum import Forum
 from ..helpers.constants import URL_BASE_HOST
-from ..helpers.quick_api import (mobile_url_encoded_call,
-                                 mobile_url_encoded_request)
+from ..helpers.quick_api import mobile_url_encoded_call, mobile_url_encoded_request
 
 
 def url():
