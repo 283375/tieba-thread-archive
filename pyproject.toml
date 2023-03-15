@@ -1,0 +1,10 @@
+[tool.black]
+extend-exclude = '''
+/(
+  | remote/protobuf
+)/
+'''
+
+[tool.isort]
+src_paths = ["src", "tests"]
+extend_skip = ["src/remote/protobuf"]
