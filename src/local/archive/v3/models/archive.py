@@ -6,16 +6,20 @@ from .post import AV3Posts, AV3SubPosts
 from .user import AV3User
 
 
+__all__ = (
+    "AV3ThreadInfo",
+    "AV3ArchiveOptions",
+    "AV3ArchiveUpdateInfo",
+    "AV3ArchiveThread",
+)
+
+
 class AV3ThreadInfo:
     class ArchivePart(TypedDict):
         id: int
         title: str
         author: AV3User.ArchivePart
         create_time: int
-
-    @staticmethod
-    def archive_title():
-        return "thread_info"
 
     @staticmethod
     def archive_dump(thread_info: ThreadInfo) -> ArchivePart:
@@ -36,7 +40,7 @@ class AV3ThreadInfo:
         )
 
 
-class AV3ArchiveInfo:
+class AV3ArchiveOptions:
     class ArchivePart(TypedDict):
         lz_only: bool
         images: bool
@@ -45,11 +49,7 @@ class AV3ArchiveInfo:
         portraits: bool
 
     @staticmethod
-    def archive_title():
-        return "archive_info"
-
-    @staticmethod
-    def archive_dump(archive_info: ArchiveInfo) -> ArchivePart:
+    def archive_dump(archive_info: ArchiveOptions) -> ArchivePart:
         return {
             "lz_only": archive_info.lz_only,
             "images": archive_info.images,
@@ -60,7 +60,7 @@ class AV3ArchiveInfo:
 
     @staticmethod
     def archive_load(archive: ArchivePart):
-        return ArchiveInfo(
+        return ArchiveOptions(
             lz_only=archive["lz_only"],
             images=archive["images"],
             audios=archive["audios"],
@@ -75,28 +75,25 @@ class AV3ArchiveUpdateInfo:
         last_update_time: Union[int, None]
 
     @staticmethod
-    def archive_title():
-        return "archive_update_info"
-
-    @staticmethod
     def archive_dump(archive_update_info: ArchiveUpdateInfo) -> ArchivePart:
         return {
-            "store_time": archive_update_info.store_time,
+            "store_time": archive_update_info.archive_time,
             "last_update_time": archive_update_info.last_update_time,
         }
 
     @staticmethod
     def archive_load(archive: ArchivePart):
         return ArchiveUpdateInfo(
-            store_time=archive["store_time"],
+            archive_time=archive["store_time"],
             last_update_time=archive["last_update_time"],
         )
 
 
 class AV3ArchiveThread:
     class ArchivePart(TypedDict):
+        archive_time: int
         thread_info: AV3ThreadInfo.ArchivePart
-        archive_info: AV3ArchiveInfo.ArchivePart
+        archive_info: AV3ArchiveOptions.ArchivePart
         posts: AV3Posts.ArchivePart
         subposts: Dict[int, AV3SubPosts.ArchivePart]
         users: List[AV3User.ArchivePart]
@@ -106,8 +103,9 @@ class AV3ArchiveThread:
     @staticmethod
     def archive_dump(archive_thread: ArchiveThread) -> ArchivePart:
         return {
+            "archive_time": archive_thread.archive_time,
             "thread_info": AV3ThreadInfo.archive_dump(archive_thread.thread_info),
-            "archive_info": AV3ArchiveInfo.archive_dump(archive_thread.archive_info),
+            "archive_info": AV3ArchiveOptions.archive_dump(archive_thread.archive_info),
             "posts": AV3Posts.archive_dump(archive_thread.posts),
             "subposts": {
                 id: AV3SubPosts.archive_dump(subpost)
@@ -125,8 +123,9 @@ class AV3ArchiveThread:
     @staticmethod
     def archive_load(archive: ArchivePart):
         return ArchiveThread(
+            archive_time=archive["archive_time"],
             thread_info=AV3ThreadInfo.archive_load(archive["thread_info"]),
-            archive_info=AV3ArchiveInfo.archive_load(archive["archive_info"]),
+            archive_options=AV3ArchiveOptions.archive_load(archive["archive_info"]),
             posts=AV3Posts.archive_load(archive["posts"]),
             subposts={
                 id: AV3SubPosts.archive_load(subpost)

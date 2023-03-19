@@ -6,6 +6,9 @@ from .content import AV3Contents
 from .user import AV3User
 
 
+__all__ = ("AV3SubPost", "AV3SubPosts", "AV3Post", "AV3Posts")
+
+
 class AV3SubPost:
     class ArchivePart(TypedDict):
         id: int
@@ -37,10 +40,6 @@ class AV3SubPost:
 
 class AV3SubPosts:
     ArchivePart = List[AV3SubPost.ArchivePart]
-
-    @staticmethod
-    def archive_title():
-        return "subposts"
 
     @staticmethod
     def archive_dump(subposts: SubPosts) -> ArchivePart:
@@ -93,10 +92,6 @@ class AV3Post:
 
 class AV3Posts:
     ArchivePart = List[AV3Post.ArchivePart]
-
-    @staticmethod
-    def archive_title():
-        return "posts"
 
     @staticmethod
     def archive_dump(posts: Posts) -> ArchivePart:

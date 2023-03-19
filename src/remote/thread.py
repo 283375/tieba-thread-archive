@@ -1,11 +1,12 @@
+import time
 from concurrent import futures
 from typing import Dict, List, Set
 
 import requests
 
-from ..models.archive import ArchiveInfo, ArchiveThread, ThreadInfo
+from ..models.archive import ArchiveOptions, ArchiveThread, ThreadInfo
 from ..models.content import ContentAudio, ContentImage
-from ..models.post import SubPosts
+from ..models.post import Posts, SubPosts
 from ..models.progress import Progress
 from ..models.user import User
 from ..remote.api import get_posts, get_subposts
@@ -18,6 +19,7 @@ class RemoteThread:
         "__mutex",
         "__progress",
         "__loaded",
+        "__loaded_time",
         "add_progress_hook",
         "add_complete_hook",
         "info",
@@ -36,6 +38,10 @@ class RemoteThread:
     @property
     def loaded(self):
         return self.__loaded
+
+    @property
+    def loaded_time(self):
+        return self.__loaded_time
 
     def __load_subposts(self, pid: int):
         with requests.Session() as session:
@@ -67,6 +73,7 @@ class RemoteThread:
                     progress += 1
 
         self.posts = get_posts.parse_responses(post_responses)
+        self.posts.sort()
         self.info = ThreadInfo.from_protobuf(
             RESPONSE_PROTOBUF.FromString(post_responses[0].content)
         )
@@ -85,9 +92,10 @@ class RemoteThread:
                 progress += 1
 
         self.__loaded = True
+        self.__loaded_time = int(time.time())
         self.__progress.invoke_complete_hooks()
 
-    def to_archive_thread(self):
+    def to_archive_thread(self, archive_info: ArchiveOptions):
         if not self.loaded:
             raise ValueError("RemoteThread not loaded.")
 
@@ -96,36 +104,36 @@ class RemoteThread:
 
         # fill posts
         posts = self.posts
-        subposts = self.subposts
+        __posts_ids = [post.id for post in posts]
+        subposts = {
+            id: subpost for id, subpost in self.subposts.items() if id in __posts_ids
+        }
 
         # parse contents & users
         users: Set[User] = set()
         images: Set[ContentImage] = set()
         audios: Set[ContentAudio] = set()
-        for post in self.posts:
-            if isinstance(post.author, User):
-                users.add(post.author)
 
+        for post in self.posts:
+            users.add(post.author)
             for content in post.contents:
-                if isinstance(content, ContentImage):
+                if archive_info.images and isinstance(content, ContentImage):
                     images.add(content)
-                elif isinstance(content, ContentAudio):
+                if archive_info.audios and isinstance(content, ContentAudio):
                     audios.add(content)
 
         for _subposts in self.subposts.values():
             for subpost in _subposts:
                 users.add(subpost.author)
                 for content in subpost.contents:
-                    if isinstance(content, ContentImage):
+                    if archive_info.images and isinstance(content, ContentImage):
                         images.add(content)
-                    elif isinstance(content, ContentAudio):
+                    if archive_info.audios and isinstance(content, ContentAudio):
                         audios.add(content)
 
         return ArchiveThread(
+            archive_time=self.__loaded_time,
             thread_info=thread_info,
-            archive_info=ArchiveInfo(
-                lz_only=False, images=True, audios=True, videos=True, portraits=True
-            ),
             posts=posts,
             subposts=subposts,
             users=users,

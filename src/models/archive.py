@@ -1,11 +1,11 @@
-from typing import Any, Dict, Iterable, Optional, TypedDict
+from typing import Any, Dict, Set, Optional, TypedDict
 
 from ..remote.api.base.get_posts import RESPONSE_PROTOBUF
 from .content import ContentAudio, ContentImage
 from .post import Posts, SubPosts
 from .user import User
 
-__all__ = ("ThreadInfo", "ArchiveInfo", "ArchiveUpdateInfo", "ArchiveThread")
+__all__ = ("ThreadInfo", "ArchiveOptions", "ArchiveUpdateInfo", "ArchiveThread")
 
 
 class ThreadInfo:
@@ -30,19 +30,17 @@ class ThreadInfo:
         return f"ThreadInfo({self.id}:{self.title}@{self.author.name})"
 
 
-class ArchiveInfo:
-    __slots__ = ("lz_only", "images", "audios", "videos", "portraits")
+class ArchiveOptions:
+    __slots__ = ("images", "audios", "videos", "portraits")
 
     def __init__(
         self,
         *,
-        lz_only: bool,
         images: bool,
         audios: bool,
         videos: bool,
         portraits: bool,
     ):
-        self.lz_only = lz_only
         self.images = images
         self.audios = audios
         self.videos = videos
@@ -50,17 +48,18 @@ class ArchiveInfo:
 
 
 class ArchiveUpdateInfo:
-    __slots__ = ("store_time", "last_update_time")
+    __slots__ = ("archive_time", "last_update_time")
 
-    def __init__(self, *, store_time: int, last_update_time: Optional[int]):
-        self.store_time = store_time
+    def __init__(self, *, archive_time: int, last_update_time: Optional[int]):
+        self.archive_time = archive_time
         self.last_update_time = last_update_time
 
 
 class ArchiveThread:
     __slots__ = (
+        "archive_time",
         "thread_info",
-        "archive_info",
+        "archive_options",
         "posts",
         "subposts",
         "users",
@@ -69,27 +68,27 @@ class ArchiveThread:
         "videos",
     )
 
+    archive_time: int
     thread_info: ThreadInfo
-    archive_info: ArchiveInfo
     posts: Posts
     subposts: Dict[int, SubPosts]
-    users: Iterable[User]
-    images: Iterable[ContentImage]
-    audios: Iterable[ContentAudio]
+    users: Set[User]
+    images: Set[ContentImage]
+    audios: Set[ContentAudio]
 
     def __init__(
         self,
         *,
+        archive_time: int,
         thread_info: ThreadInfo,
-        archive_info: ArchiveInfo,
         posts: Posts,
         subposts: Dict[int, SubPosts],
-        users: Iterable[User],
-        images: Iterable[ContentImage],
-        audios: Iterable[ContentAudio],
+        users: Set[User],
+        images: Set[ContentImage],
+        audios: Set[ContentAudio],
     ):
+        self.archive_time = archive_time
         self.thread_info = thread_info
-        self.archive_info = archive_info
         self.posts = posts
         self.subposts = subposts
         self.users = users
@@ -97,10 +96,12 @@ class ArchiveThread:
         self.audios = audios
 
     def __setattr__(self, name: str, value: Any):
-        if name == "thread_info":
+        if name == "time":
+            assert isinstance(value, int)
+        elif name == "thread_info":
             assert isinstance(value, ThreadInfo)
         elif name == "archive_info":
-            assert isinstance(value, ArchiveInfo)
+            assert isinstance(value, ArchiveOptions)
         elif name == "posts":
             assert isinstance(value, Posts)
         elif name == "subposts":
@@ -115,3 +116,24 @@ class ArchiveThread:
             assert all(isinstance(v, ContentAudio) for v in value)
 
         return super().__setattr__(name, value)
+
+    def update(self, other):
+        if not isinstance(other, self.__class__):
+            raise ValueError("Not ArchiveThread.")
+        if self.thread_info.id != other.thread_info.id:
+            raise ValueError("Different ArchiveThread (thread_info not match).")
+
+        self.archive_time = other.archive_time
+        self.thread_info = other.thread_info
+        self.posts |= other.posts
+        for id in self.subposts.keys():
+            _other_subposts = other.subposts.get(id)
+            if _other_subposts is not None:
+                self.subposts[id] |= _other_subposts
+        self.users |= other.users
+        self.images |= other.images
+        self.audios |= other.audios
+        return self
+
+    def __or__(self, other):
+        return self.update(other)

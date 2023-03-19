@@ -3,7 +3,7 @@ from os import PathLike
 from pathlib import Path
 from typing import Dict, Iterable, List, Optional, Set, Tuple, Union
 
-from ....models.archive import ArchiveInfo, ArchiveThread, ThreadInfo
+from ....models.archive import ArchiveOptions, ArchiveThread, ThreadInfo
 from ....models.content import ContentAudio, ContentImage
 from ....models.post import Posts, SubPosts
 from ....models.user import User
@@ -31,7 +31,7 @@ def load_v2_users(path: Union[str, PathLike]) -> Set[User]:
 
 def load_v2_info(
     path: Union[str, PathLike], users: Optional[Iterable[User]] = None
-) -> Tuple[ThreadInfo, ArchiveInfo]:
+) -> Tuple[ThreadInfo, ArchiveOptions]:
     path = Path(path)
 
     with open(path / "threadInfo.json", "r", encoding="utf-8") as info_rs:
@@ -59,7 +59,7 @@ def load_v2_info(
         )
 
         assets_archived = info["storeOptions"]["assets"]
-        archive_info = ArchiveInfo(
+        archive_info = ArchiveOptions(
             lz_only=info["storeOptions"]["lzOnly"],
             images=assets_archived,
             audios=assets_archived,
@@ -124,7 +124,7 @@ def load_v2(path: Union[str, PathLike]) -> ArchiveThread:
 
     return ArchiveThread(
         thread_info=thread_info,
-        archive_info=archive_info,
+        archive_options=archive_info,
         users=users,
         posts=posts,
         subposts=subposts,

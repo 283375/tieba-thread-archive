@@ -84,6 +84,12 @@ class SubPosts(List[SubPost]):
                 "SubPosts can only be added to another instance of SubPosts."
             )
 
+    def __radd__(self, other):
+        return self.__add__(other)
+
+    def __or__(self, other):
+        return self.__add__(other)
+
     def __repr__(self):
         display_subposts = self[:3]
         rest_subposts = len(self) - 3
@@ -198,4 +204,7 @@ class Posts(List[Post]):
             raise TypeError("Posts can only be added to another instance of Posts.")
 
     def __radd__(self, other):
+        return self.__add__(other)
+
+    def __or__(self, other):
         return self.__add__(other)
