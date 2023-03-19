@@ -16,7 +16,9 @@ PROTOBUF_IMPORT_DIRS = [
     PROTOBUF_SOURCE_ROOT_DIR / "common",
 ]
 PROTOBUF_OUT_DIR = DIRNAME / "out"
-PROTOBUF_FINAL_DIR = DIRNAME / ".." / "src" / "remote" / "protobuf"
+PROTOBUF_FINAL_DIR = (
+    DIRNAME / ".." / "src" / "tieba_thread_archive" / "remote" / "protobuf"
+)
 
 PROTOC = "protoc"
 
