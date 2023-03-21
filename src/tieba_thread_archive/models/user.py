@@ -6,16 +6,34 @@ __all__ = ("User",)
 
 
 class User:
-    __slots__ = ("id", "name", "name_show", "portrait", "level_id")
+    __slots__ = (
+        "id",
+        "name",
+        "name_show",
+        "portrait",
+        "level_id",
+        "is_bawu",
+        "bawu_type",
+    )
 
     def __init__(
-        self, *, id: int, name: str, name_show: str, portrait: str, level_id: int
+        self,
+        *,
+        id: int,
+        name: str,
+        name_show: str,
+        portrait: str,
+        level_id: int,
+        is_bawu: int,
+        bawu_type: str,
     ):
         self.id = id
         self.name = name
         self.name_show = name_show
         self.portrait = portrait
         self.level_id = level_id
+        self.is_bawu = is_bawu
+        self.bawu_type = bawu_type
 
     @classmethod
     def from_protobuf(cls, pb: User_pb2.User):
@@ -25,6 +43,8 @@ class User:
             name_show=pb.name_show,
             portrait=pb.portrait,
             level_id=pb.level_id,
+            is_bawu=pb.is_bawu,
+            bawu_type=pb.bawu_type,
         )
 
     def __hash__(self):
