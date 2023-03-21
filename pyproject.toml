@@ -8,3 +8,6 @@ extend-exclude = '''
 [tool.isort]
 src_paths = ["src", "tests"]
 extend_skip = ["src/remote/protobuf"]
+
+[tool.pytest.ini_options]
+pythonpath = "."
