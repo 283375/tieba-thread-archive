@@ -10,7 +10,7 @@ from ..models.post import Posts, SubPosts
 from ..models.progress import Progress
 from ..models.user import User
 from ..remote.api import get_posts, get_subposts
-from ..remote.api.base.get_posts import RESPONSE_PROTOBUF
+from ..remote.protobuf.response.PbPageResIdl_pb2 import PbPageResIdl
 
 
 class RemoteThread:
@@ -75,7 +75,7 @@ class RemoteThread:
         self.posts = get_posts.parse_responses(post_responses)
         self.posts.sort()
         self.info = ThreadInfo.from_protobuf(
-            RESPONSE_PROTOBUF.FromString(post_responses[0].content)
+            PbPageResIdl.FromString(post_responses[0].content)
         )
         progress.step += 1
 

@@ -1,6 +1,6 @@
 from typing import Any, Dict, Set, Optional, TypedDict
 
-from ..remote.api.base.get_posts import RESPONSE_PROTOBUF
+from ..remote.protobuf.response.PbPageResIdl_pb2 import PbPageResIdl
 from .content import ContentAudio, ContentImage
 from .post import Posts, SubPosts
 from .user import User
@@ -18,7 +18,7 @@ class ThreadInfo:
         self.create_time = create_time
 
     @classmethod
-    def from_protobuf(cls, pb: RESPONSE_PROTOBUF):
+    def from_protobuf(cls, pb: PbPageResIdl):
         return cls(
             id=pb.data.thread.id,
             title=pb.data.thread.title,
