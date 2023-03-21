@@ -139,14 +139,21 @@ class Post:
     def from_protobuf(
         cls,
         pb: Post_pb2.Post,
-        user_list: Union[RepeatedCompositeFieldContainer[User_pb2.User], None] = None,
+        user_list: RepeatedCompositeFieldContainer[User_pb2.User],
     ):
+        for user_pb in user_list:
+            if pb.author_id == user_pb.id:
+                author = User.from_protobuf(user_pb)
+                break
+        else:
+            raise ValueError(f"Cannot find author (id {pb.author_id}) in user list.")
+
         return cls(
             floor=pb.floor,
             id=pb.id,
             title=pb.title,
             agree=Agree.from_protobuf(pb.agree),
-            author=User.from_protobuf(pb.author),
+            author=author,
             time=pb.time,
             subpost_num=pb.sub_post_number,
             contents=Contents.from_protobuf(pb.content),
@@ -176,7 +183,7 @@ class Posts(List[Post]):
     def from_protobuf(
         cls,
         pb: RepeatedCompositeFieldContainer[Post_pb2.Post],
-        user_list: Union[RepeatedCompositeFieldContainer[User_pb2.User], None] = None,
+        user_list: RepeatedCompositeFieldContainer[User_pb2.User],
     ):
         posts = [Post.from_protobuf(_pb, user_list) for _pb in pb]
         return cls(posts)
