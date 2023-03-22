@@ -1,4 +1,4 @@
-from typing import Any, Dict, Set, Optional, TypedDict
+from typing import Any, Dict, Optional, Set, TypedDict
 
 from ..remote.protobuf.response.PbPageResIdl_pb2 import PbPageResIdl
 from .content import ContentAudio, ContentImage

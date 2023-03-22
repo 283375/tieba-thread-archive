@@ -1,9 +1,8 @@
-from typing import Tuple, Dict, Set
+from typing import Dict, Set, Tuple
 
 from ....models import *
 from .file_structure import *
 from .models import *
-
 
 __all__ = ("av3_load_info", "av3_load_thread")
 
