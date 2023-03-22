@@ -125,14 +125,14 @@ class ArchiveThread:
 
         self.archive_time = other.archive_time
         self.thread_info = other.thread_info
-        self.posts |= other.posts
+        self.posts = other.posts | self.posts
         for id in self.subposts.keys():
             _other_subposts = other.subposts.get(id)
             if _other_subposts is not None:
-                self.subposts[id] |= _other_subposts
-        self.users |= other.users
-        self.images |= other.images
-        self.audios |= other.audios
+                self.subposts[id] = _other_subposts | self.subposts[id]
+        self.users = other.users | self.users
+        self.images = other.images | self.images
+        self.audios = other.audios | self.audios
         return self
 
     def __or__(self, other):

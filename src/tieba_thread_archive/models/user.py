@@ -51,7 +51,7 @@ class User:
         return hash(self.id)
 
     def __eq__(self, other):
-        return isinstance(other, self.__class__) and self.id == other.id
+        return isinstance(other, self.__class__) and self.__hash__() == other.__hash__()
 
     def __repr__(self):
         return f"User({self.id}:{self.name_show}[Lv.{self.level_id}])"
