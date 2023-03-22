@@ -1,4 +1,4 @@
-from typing import Iterable, List, Optional, TypedDict, TypeVar, Union
+from typing import Iterable, List, Optional
 
 from google.protobuf.internal.containers import RepeatedCompositeFieldContainer
 from yarl import URL
@@ -31,6 +31,12 @@ class ContentBase:
     def from_protobuf(cls, pb: PbContent_pb2.PbContent):
         raise NotImplementedError("ContentBase is not meant to be used directly.")
 
+    def __hash__(self):
+        raise NotImplementedError("ContentBase is not meant to be used directly.")
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__hash__() == other.__hash__()
+
 
 class ContentText(ContentBase):
     __slots__ = ("text",)
@@ -45,6 +51,9 @@ class ContentText(ContentBase):
 
     def __repr__(self):
         return f"ContentText({truncate_text(self.text, 5)})"
+
+    def __hash__(self):
+        return hash(self.text)
 
 
 class ContentLink(ContentBase):
@@ -62,6 +71,9 @@ class ContentLink(ContentBase):
     def __repr__(self):
         return f"ContentLink({truncate_text(self.link, 50)})"
 
+    def __hash__(self):
+        return hash(f"{hash(self.text)}{self.text}{hash(self.link)}{self.link}")
+
 
 class ContentEmoticon(ContentBase):
     __slots__ = ("text", "c")
@@ -77,6 +89,9 @@ class ContentEmoticon(ContentBase):
 
     def __repr__(self):
         return f"ContentEmoticon({self.c}:{self.text})"
+
+    def __hash__(self):
+        return hash(f"{self.text}{self.c}")
 
 
 class ContentImage(ContentBase):
@@ -97,7 +112,7 @@ class ContentImage(ContentBase):
         )
 
     def __hash__(self):
-        return hash(self.origin_src)
+        return hash(f"{self.origin_src}{self.filename}")
 
     def __repr__(self):
         return f"ContentImage({self.filename})"
@@ -114,6 +129,9 @@ class ContentAt(ContentBase):
     @classmethod
     def from_protobuf(cls, pb):
         return cls(text=pb.text, uid=pb.uid)
+
+    def __hash__(self):
+        return hash(f"{self.text}{self.uid}")
 
     def __repr__(self):
         return f"ContentAt(@{self.text}:{self.uid})"
@@ -135,10 +153,6 @@ class ContentAudio(ContentBase):
 
     def __repr__(self):
         return f"ContentAudio({self.voice_md5}.mp3)"
-
-
-K = TypeVar("K", bound=int)
-CB = TypeVar("CB", bound=ContentBase, covariant=True)
 
 
 class ContentTypeMapping(dict):
@@ -193,3 +207,13 @@ class Contents(List[ContentBase]):
 
     def __repr__(self):
         return f"Contents(...{len(self)})"
+
+    def __eq__(self, other):
+        if not isinstance(other, self.__class__):
+            return False
+
+        return (
+            all(self[i] == other[i] for i in range(len(self)))
+            if len(self) == len(other)
+            else False
+        )
