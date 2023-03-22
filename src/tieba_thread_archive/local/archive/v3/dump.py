@@ -1,6 +1,6 @@
 from os import PathLike
 from pathlib import Path
-from typing import Dict, Iterable, Optional, Union
+from typing import Union
 
 import yaml
 

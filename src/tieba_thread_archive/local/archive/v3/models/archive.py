@@ -42,7 +42,6 @@ class AV3ThreadInfo:
 
 class AV3ArchiveOptions:
     class ArchivePart(TypedDict):
-        lz_only: bool
         images: bool
         audios: bool
         videos: bool
@@ -51,7 +50,6 @@ class AV3ArchiveOptions:
     @staticmethod
     def archive_dump(archive_info: ArchiveOptions) -> ArchivePart:
         return {
-            "lz_only": archive_info.lz_only,
             "images": archive_info.images,
             "audios": archive_info.audios,
             "videos": archive_info.videos,
@@ -61,7 +59,6 @@ class AV3ArchiveOptions:
     @staticmethod
     def archive_load(archive: ArchivePart):
         return ArchiveOptions(
-            lz_only=archive["lz_only"],
             images=archive["images"],
             audios=archive["audios"],
             videos=archive["videos"],
@@ -93,7 +90,6 @@ class AV3ArchiveThread:
     class ArchivePart(TypedDict):
         archive_time: int
         thread_info: AV3ThreadInfo.ArchivePart
-        archive_info: AV3ArchiveOptions.ArchivePart
         posts: AV3Posts.ArchivePart
         subposts: Dict[int, AV3SubPosts.ArchivePart]
         users: List[AV3User.ArchivePart]
@@ -105,7 +101,6 @@ class AV3ArchiveThread:
         return {
             "archive_time": archive_thread.archive_time,
             "thread_info": AV3ThreadInfo.archive_dump(archive_thread.thread_info),
-            "archive_info": AV3ArchiveOptions.archive_dump(archive_thread.archive_info),
             "posts": AV3Posts.archive_dump(archive_thread.posts),
             "subposts": {
                 id: AV3SubPosts.archive_dump(subpost)
@@ -122,16 +117,17 @@ class AV3ArchiveThread:
 
     @staticmethod
     def archive_load(archive: ArchivePart):
+        users = {AV3User.archive_load(user) for user in archive["users"]}
+
         return ArchiveThread(
             archive_time=archive["archive_time"],
             thread_info=AV3ThreadInfo.archive_load(archive["thread_info"]),
-            archive_options=AV3ArchiveOptions.archive_load(archive["archive_info"]),
-            posts=AV3Posts.archive_load(archive["posts"]),
+            posts=AV3Posts.archive_load(archive["posts"], users),
             subposts={
-                id: AV3SubPosts.archive_load(subpost)
+                id: AV3SubPosts.archive_load(subpost, users)
                 for id, subpost in archive["subposts"].items()
             },
-            users=[AV3User.archive_load(user) for user in archive["users"]],
-            images=[AV3ContentImage.archive_load(image) for image in archive["images"]],
-            audios=[AV3ContentAudio.archive_load(audio) for audio in archive["audios"]],
+            users=users,
+            images={AV3ContentImage.archive_load(image) for image in archive["images"]},
+            audios={AV3ContentAudio.archive_load(audio) for audio in archive["audios"]},
         )
