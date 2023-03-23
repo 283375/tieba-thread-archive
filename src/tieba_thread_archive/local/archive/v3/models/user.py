@@ -1,4 +1,5 @@
 from typing import TypedDict
+from typing_extensions import NotRequired
 
 from .....models.user import User
 
@@ -13,19 +14,23 @@ class AV3User:
         portrait: str
         level_id: int
         is_bawu: int
-        bawu_type: str
+        bawu_type: NotRequired[str]
 
     @staticmethod
     def archive_dump(user: User) -> ArchivePart:
-        return {
+        archive_part: AV3User.ArchivePart = {
             "id": user.id,
             "name": user.name,
             "name_show": user.name_show,
             "portrait": user.portrait,
             "level_id": user.level_id,
             "is_bawu": user.is_bawu,
-            "bawu_type": user.bawu_type,
         }
+
+        if user.is_bawu:
+            archive_part["bawu_type"] = user.bawu_type
+
+        return archive_part
 
     @staticmethod
     def archive_load(archive: ArchivePart):
@@ -36,5 +41,5 @@ class AV3User:
             portrait=archive["portrait"],
             level_id=archive["level_id"],
             is_bawu=archive["is_bawu"],
-            bawu_type=archive["bawu_type"],
+            bawu_type=archive.get("bawu_type", ""),
         )
