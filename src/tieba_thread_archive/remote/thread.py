@@ -5,7 +5,7 @@ from typing import Dict, List, Set
 import requests
 
 from ..models.archive import ArchiveOptions, ArchiveThread, ThreadInfo
-from ..models.content import ContentAudio, ContentImage
+from ..models.content import ContentAudio, ContentImage, ContentVideo
 from ..models.post import Posts, SubPosts
 from ..models.progress import Progress
 from ..models.user import User
@@ -113,6 +113,7 @@ class RemoteThread:
         users: Set[User] = set()
         images: Set[ContentImage] = set()
         audios: Set[ContentAudio] = set()
+        videos: Set[ContentVideo] = set()
 
         for post in self.posts:
             users.add(post.author)
@@ -121,6 +122,8 @@ class RemoteThread:
                     images.add(content)
                 if archive_info.audios and isinstance(content, ContentAudio):
                     audios.add(content)
+                if isinstance(content, ContentVideo):
+                    videos.add(content)
 
         for _subposts in self.subposts.values():
             for subpost in _subposts:
@@ -130,6 +133,8 @@ class RemoteThread:
                         images.add(content)
                     if archive_info.audios and isinstance(content, ContentAudio):
                         audios.add(content)
+                    if isinstance(content, ContentVideo):
+                        videos.add(content)
 
         return ArchiveThread(
             archive_time=self.__loaded_time,
@@ -139,4 +144,5 @@ class RemoteThread:
             users=users,
             images=images,
             audios=audios,
+            videos=videos,
         )

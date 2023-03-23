@@ -1,7 +1,7 @@
-from typing import Any, Dict, Optional, Set, TypedDict
+from typing import Any, Dict, Optional, Set
 
 from ..remote.protobuf.response.PbPageResIdl_pb2 import PbPageResIdl
-from .content import ContentAudio, ContentImage
+from .content import ContentAudio, ContentImage, ContentVideo
 from .post import Posts, SubPosts
 from .user import User
 
@@ -75,6 +75,7 @@ class ArchiveThread:
     users: Set[User]
     images: Set[ContentImage]
     audios: Set[ContentAudio]
+    videos: Set[ContentVideo]
 
     def __init__(
         self,
@@ -86,6 +87,7 @@ class ArchiveThread:
         users: Set[User],
         images: Set[ContentImage],
         audios: Set[ContentAudio],
+        videos: Set[ContentVideo],
     ):
         self.archive_time = archive_time
         self.thread_info = thread_info
@@ -94,6 +96,7 @@ class ArchiveThread:
         self.users = users
         self.images = images
         self.audios = audios
+        self.videos = videos
 
     def __setattr__(self, name: str, value: Any):
         if name == "time":
@@ -114,6 +117,8 @@ class ArchiveThread:
             assert all(isinstance(v, ContentImage) for v in value)
         elif name == "audios":
             assert all(isinstance(v, ContentAudio) for v in value)
+        elif name == "videos":
+            assert all(isinstance(v, ContentVideo) for v in value)
 
         return super().__setattr__(name, value)
 
@@ -133,6 +138,7 @@ class ArchiveThread:
         self.users = other.users | self.users
         self.images = other.images | self.images
         self.audios = other.audios | self.audios
+        self.videos = other.videos | self.videos
         return self
 
     def __or__(self, other):

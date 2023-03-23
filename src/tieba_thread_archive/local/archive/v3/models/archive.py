@@ -1,7 +1,7 @@
 from typing import Dict, List, TypedDict, Union
 
 from .....models import *
-from .content import AV3ContentAudio, AV3ContentImage
+from .content import AV3ContentAudio, AV3ContentImage, AV3ContentVideo
 from .post import AV3Posts, AV3SubPosts
 from .user import AV3User
 
@@ -94,6 +94,7 @@ class AV3ArchiveThread:
         users: List[AV3User.ArchivePart]
         images: List[AV3ContentImage.ArchivePart]
         audios: List[AV3ContentAudio.ArchivePart]
+        videos: List[AV3ContentVideo.ArchivePart]
 
     @staticmethod
     def archive_dump(archive_thread: ArchiveThread) -> ArchivePart:
@@ -112,6 +113,9 @@ class AV3ArchiveThread:
             "audios": [
                 AV3ContentAudio.archive_dump(audio) for audio in archive_thread.audios
             ],
+            "videos": [
+                AV3ContentVideo.archive_dump(video) for video in archive_thread.videos
+            ],
         }
 
     @staticmethod
@@ -129,4 +133,5 @@ class AV3ArchiveThread:
             users=users,
             images={AV3ContentImage.archive_load(image) for image in archive["images"]},
             audios={AV3ContentAudio.archive_load(audio) for audio in archive["audios"]},
+            videos={AV3ContentVideo.archive_load(video) for video in archive["videos"]},
         )

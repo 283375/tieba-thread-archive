@@ -1,4 +1,4 @@
-from typing import Iterable, List, Optional
+from typing import Iterable, List, Optional, Tuple
 
 from google.protobuf.internal.containers import RepeatedCompositeFieldContainer
 from yarl import URL
@@ -13,6 +13,7 @@ __all__ = (
     "ContentEmoticon",
     "ContentImage",
     "ContentAt",
+    "ContentVideo",
     "ContentAudio",
     "ContentSegment",
     "Contents",
@@ -137,12 +138,52 @@ class ContentAt(ContentBase):
         return f"ContentAt(@{self.text}:{self.uid})"
 
 
+class ContentVideo(ContentBase):
+    __slots__ = ("text", "link", "src", "bsize", "origin_size", "filename")
+    type = 5
+
+    def __init__(
+        self,
+        *,
+        text: str,
+        filename: Optional[str] = None,
+        link: Optional[str] = None,
+        src: Optional[str] = None,
+        bsize: Optional[Tuple[int, int]] = None,
+        origin_size: Optional[int] = None,
+    ):
+        self.text = text
+        self.filename = filename
+        self.link = link
+        self.src = src
+        self.bsize = bsize
+        self.origin_size = origin_size
+
+    @classmethod
+    def from_protobuf(cls, pb):
+        return cls(
+            text=pb.text,
+            filename=URL(pb.link).name if pb.link else None,
+            link=pb.link or None,
+            src=pb.src or None,
+            bsize=tuple(int(v) for v in pb.bsize.split(",")) if pb.bsize else None,
+            origin_size=pb.origin_size or None,
+        )
+
+    def __hash__(self):
+        return hash(f"{self.text}{self.link}")
+
+    def __repr__(self):
+        return f"ContentVideo({self.filename or self.text})"
+
+
 class ContentAudio(ContentBase):
-    __slots__ = ("voice_md5",)
+    __slots__ = ("voice_md5", "filename")
     type = 10
 
     def __init__(self, *, voice_md5: str):
         self.voice_md5 = voice_md5
+        self.filename = f"{voice_md5}.mp3"
 
     @classmethod
     def from_protobuf(cls, pb):
@@ -163,6 +204,7 @@ class ContentTypeMapping(dict):
             2: ContentEmoticon,
             3: ContentImage,
             4: ContentAt,
+            5: ContentVideo,
             10: ContentAudio,
         }
 

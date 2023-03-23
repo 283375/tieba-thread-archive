@@ -1,4 +1,4 @@
-from typing import Any, List, TypedDict
+from typing import Any, List, TypedDict, Optional, Tuple
 
 from .....models.content import *
 
@@ -9,6 +9,7 @@ __all__ = (
     "AV3ContentEmoticon",
     "AV3ContentImage",
     "AV3ContentAt",
+    "AV3ContentVideo",
     "AV3ContentAudio",
     "AV3ContentTypeMapping",
     "AV3ContentSegment",
@@ -108,6 +109,39 @@ class AV3ContentAt(AV3ContentBase):
         return ContentAt(text=archive["text"], uid=archive["uid"])
 
 
+class AV3ContentVideo(AV3ContentBase):
+    class ArchivePart(AV3ContentBase.ArchivePart):
+        text: str
+        filename: Optional[str]
+        link: Optional[str]
+        src: Optional[str]
+        bsize: Optional[Tuple[int, int]]
+        origin_size: Optional[int]
+
+    @staticmethod
+    def archive_dump(content: ContentVideo) -> ArchivePart:
+        return {
+            "type": content.type,
+            "text": content.text,
+            "filename": content.filename,
+            "link": content.link,
+            "src": content.src,
+            "bsize": content.bsize,
+            "origin_size": content.origin_size,
+        }
+
+    @staticmethod
+    def archive_load(archive: ArchivePart):
+        return ContentVideo(
+            text=archive["text"],
+            filename=archive["filename"],
+            link=archive["link"],
+            src=archive["src"],
+            bsize=archive["bsize"],
+            origin_size=archive["origin_size"],
+        )
+
+
 class AV3ContentAudio(AV3ContentBase):
     class ArchivePart(AV3ContentBase.ArchivePart):
         voice_md5: str
@@ -129,6 +163,7 @@ class AV3ContentTypeMapping(dict):
             2: AV3ContentEmoticon,
             3: AV3ContentImage,
             4: AV3ContentAt,
+            5: AV3ContentVideo,
             10: AV3ContentAudio,
         }
 
