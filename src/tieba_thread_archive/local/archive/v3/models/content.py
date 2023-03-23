@@ -1,4 +1,4 @@
-from typing import Any, List, TypedDict, Optional, Tuple
+from typing import Any, List, Optional, Tuple, TypedDict
 
 from .....models.content import *
 
