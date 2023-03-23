@@ -42,6 +42,7 @@ def av3_dump_archive(
         with open(path / "thread.yml", "r+", encoding="utf-8") as thread_yaml_rws:
             _archive_thread = av3_load_thread(yaml.safe_load(thread_yaml_rws.read()))
             _archive_thread |= archive_thread
+            thread_yaml_rws.seek(0)
             thread_yaml_rws.truncate()
             thread_yaml_rws.write(
                 av3_get_thread_yaml_dump_str(archive_thread=_archive_thread)
@@ -52,6 +53,7 @@ def av3_dump_archive(
                 yaml.safe_load(info_yaml_rws.read())
             )
             archive_update_info.last_update_time = archive_thread.archive_time
+            info_yaml_rws.seek(0)
             info_yaml_rws.truncate()
             info_yaml_rws.write(
                 av3_get_info_yaml_dump_str(
