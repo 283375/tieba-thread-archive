@@ -141,3 +141,14 @@ class ArchiveThread:
 
     def __or__(self, other):
         return self.update(other)
+
+    def __eq__(self, other):
+        return (
+            (
+                self.posts == other.posts
+                and self.subposts == other.subposts
+                and self.users == other.users
+            )
+            if isinstance(other, self.__class__)
+            else False
+        )

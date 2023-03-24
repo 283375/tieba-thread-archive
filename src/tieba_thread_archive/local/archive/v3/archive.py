@@ -213,26 +213,30 @@ class AV3LocalArchive:
         self.__dump_archive_thread()
         self.__dump_assets()
 
-    def update_archive_thread(self, archive_thread: ArchiveThread):
+    def update_archive_thread(self, new_archive_thread: ArchiveThread):
         # sourcery skip: extract-method
         if self.archive_thread is None:
-            self.archive_thread = archive_thread
-            self.images = archive_thread.images()
-            self.audios = archive_thread.audios()
-            self.videos = archive_thread.videos()
+            self.archive_thread = new_archive_thread
+            self.images = new_archive_thread.images()
+            self.audios = new_archive_thread.audios()
+            self.videos = new_archive_thread.videos()
 
             self.archive_update_info = ArchiveUpdateInfo(
-                archive_time=archive_thread.archive_time, last_update_time=None
+                archive_time=new_archive_thread.archive_time, last_update_time=None
             )
         else:
+            if self.archive_thread == new_archive_thread:
+                # TODO: log
+                return
+
             self.__history.append(self.archive_thread)
 
-            self.archive_thread.update(archive_thread)
-            self.images = archive_thread.images() | self.images
-            self.audios = archive_thread.audios() | self.audios
-            self.videos = archive_thread.videos() | self.videos
+            self.archive_thread.update(new_archive_thread)
+            self.images = new_archive_thread.images() | self.images
+            self.audios = new_archive_thread.audios() | self.audios
+            self.videos = new_archive_thread.videos() | self.videos
 
             if self.archive_update_info is None:
                 raise ValueError("TODO: this should not happen")
 
-            self.archive_update_info.last_update_time = archive_thread.archive_time
+            self.archive_update_info.last_update_time = new_archive_thread.archive_time
