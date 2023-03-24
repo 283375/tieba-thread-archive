@@ -13,7 +13,8 @@ import yaml
     [/audios]
     [/portraits]
     info.yml
-    data.yml
+    thread.yml
+    [assets.yml]
 
 
 /version_2
@@ -33,17 +34,19 @@ import yaml
 __all__ = ("detect_archive_version",)
 
 
-def detect_archive_version(path: Union[str, PathLike]):
+def detect_archive_version(path: Union[str, PathLike]) -> Union[int, None]:
     path = Path(path)
     subfiles = list(path.iterdir())
     subfile_names = {file.name for file in subfiles}
 
-    if "data.yml" in subfile_names and "info.yml" in subfile_names:
+    if "thread.yml" in subfile_names and "info.yml" in subfile_names:
         # version >= 3
         try:
-            with open(path, "r", encoding="utf-8") as info_rs:
+            with open(path / "info.yml", "r", encoding="utf-8") as info_rs:
                 info_archive = yaml.safe_load(info_rs.read())
-
+                version = info_archive.get("version")
+                assert version is not None and isinstance(version, int)
+                return version
         except Exception:
             return None
     elif "posts.json" in subfile_names and "threadInfo.json" in subfile_names:
