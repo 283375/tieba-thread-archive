@@ -132,7 +132,7 @@ class AV3LocalArchive:
                 continue
 
             with open(filepath, "w", encoding="utf-8") as history_ws:
-                history_ws.write(av3_get_thread_yaml_dump_str(archive_thread=history))
+                history_ws.write(av3_dump_thread_yaml_str(archive_thread=history))
 
     def __load_info(self):
         with open(self.info_file, "r", encoding="utf-8") as info_rs:
@@ -147,7 +147,7 @@ class AV3LocalArchive:
         if self.archive_thread and self.archive_options and self.archive_update_info:
             with open(self.info_file, "w", encoding="utf-8") as info_ws:
                 info_ws.write(
-                    av3_get_info_yaml_dump_str(
+                    av3_dump_info_yaml_str(
                         thread_info=self.archive_thread.thread_info,
                         archive_options=self.archive_options,
                         archive_update_info=self.archive_update_info,
@@ -175,7 +175,7 @@ class AV3LocalArchive:
         if self.archive_thread:
             with open(self.path / "thread.yaml", "w", encoding="utf-8") as thread_ws:
                 thread_ws.write(
-                    av3_get_thread_yaml_dump_str(archive_thread=self.archive_thread)
+                    av3_dump_thread_yaml_str(archive_thread=self.archive_thread)
                 )
         else:
             raise ValueError(
@@ -193,7 +193,7 @@ class AV3LocalArchive:
     def __dump_assets(self):
         with open(self.assets_file, "w", encoding="utf-8") as assets_ws:
             assets_ws.write(
-                av3_get_assets_yaml_dump_str(
+                av3_dump_assets_yaml_str(
                     images=self.images, audios=self.audios, videos=self.videos
                 )
             )

@@ -1,6 +1,4 @@
-from os import PathLike
-from pathlib import Path
-from typing import Set, Union
+from typing import Set
 
 import yaml
 
@@ -10,13 +8,13 @@ from .load import *
 from .models import *
 
 __all__ = (
-    "av3_get_info_yaml_dump_str",
-    "av3_get_thread_yaml_dump_str",
-    "av3_get_assets_yaml_dump_str",
+    "av3_dump_info_yaml_str",
+    "av3_dump_thread_yaml_str",
+    "av3_dump_assets_yaml_str",
 )
 
 
-def av3_get_info_yaml_dump_str(
+def av3_dump_info_yaml_str(
     *,
     thread_info: ThreadInfo,
     archive_options: ArchiveOptions,
@@ -31,12 +29,12 @@ def av3_get_info_yaml_dump_str(
     return yaml.safe_dump(info_yaml, allow_unicode=True, sort_keys=False)
 
 
-def av3_get_thread_yaml_dump_str(*, archive_thread: ArchiveThread) -> str:
+def av3_dump_thread_yaml_str(*, archive_thread: ArchiveThread) -> str:
     thread_yaml: AV3File_ThreadYaml = AV3ArchiveThread.archive_dump(archive_thread)
     return yaml.safe_dump(thread_yaml, allow_unicode=True, sort_keys=False)
 
 
-def av3_get_assets_yaml_dump_str(
+def av3_dump_assets_yaml_str(
     *, images: Set[ContentImage], audios: Set[ContentAudio], videos: Set[ContentVideo]
 ) -> str:
     assets_yaml: AV3File_AssetsYaml = {
