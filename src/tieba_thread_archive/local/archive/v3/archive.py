@@ -111,6 +111,9 @@ class AV3LocalArchive:
                         self.__history.append(archive_history)
 
     def __dump_history(self):
+        if not self.history:
+            return
+
         self.history_dir.mkdir(exist_ok=True)
 
         existing_files = [path.name for path in self.history_dir.iterdir()]
@@ -209,11 +212,16 @@ class AV3LocalArchive:
         self.__dump_assets()
 
     def update_archive_thread(self, archive_thread: ArchiveThread):
+        # sourcery skip: extract-method
         if self.archive_thread is None:
             self.archive_thread = archive_thread
             self.images = archive_thread.images()
             self.audios = archive_thread.audios()
             self.videos = archive_thread.videos()
+
+            self.archive_update_info = ArchiveUpdateInfo(
+                archive_time=archive_thread.archive_time, last_update_time=None
+            )
         else:
             self.__history.append(self.archive_thread)
 
@@ -221,3 +229,8 @@ class AV3LocalArchive:
             self.images = archive_thread.images() | self.images
             self.audios = archive_thread.audios() | self.audios
             self.videos = archive_thread.videos() | self.videos
+
+            if self.archive_update_info is None:
+                raise ValueError("TODO: this should not happen")
+
+            self.archive_update_info.last_update_time = archive_thread.archive_time
