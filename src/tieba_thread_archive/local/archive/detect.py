@@ -12,9 +12,9 @@ import yaml
     [/videos]
     [/audios]
     [/portraits]
-    info.yml
-    thread.yml
-    [assets.yml]
+    info.yaml
+    thread.yaml
+    [assets.yaml]
 
 
 /version_2
@@ -39,10 +39,10 @@ def detect_archive_version(path: Union[str, PathLike]) -> Union[int, None]:
     subfiles = list(path.iterdir())
     subfile_names = {file.name for file in subfiles}
 
-    if "thread.yml" in subfile_names and "info.yml" in subfile_names:
+    if "thread.yaml" in subfile_names and "info.yaml" in subfile_names:
         # version >= 3
         try:
-            with open(path / "info.yml", "r", encoding="utf-8") as info_rs:
+            with open(path / "info.yaml", "r", encoding="utf-8") as info_rs:
                 info_archive = yaml.safe_load(info_rs.read())
                 version = info_archive.get("version")
                 assert version is not None and isinstance(version, int)

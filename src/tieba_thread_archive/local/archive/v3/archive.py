@@ -73,15 +73,15 @@ class AV3LocalArchive:
 
     @property
     def info_file(self):
-        return self.path / "info.yml"
+        return self.path / "info.yaml"
 
     @property
     def thread_file(self):
-        return self.path / "thread.yml"
+        return self.path / "thread.yaml"
 
     @property
     def assets_file(self):
-        return self.path / "assets.yml"
+        return self.path / "assets.yaml"
 
     @property
     def history(self):
@@ -101,7 +101,7 @@ class AV3LocalArchive:
         ]
 
         for file in files:
-            if fnmatch.fnmatch(file.name, "*.yml"):
+            if fnmatch.fnmatch(file.name, "*.yaml"):
                 with open(file, "r", encoding="utf-8") as history_rs:
                     archive_history = av3_load_thread_yaml(
                         yaml.safe_load(history_rs.read())
@@ -125,7 +125,7 @@ class AV3LocalArchive:
                 datetime.fromtimestamp(history.archive_time).strftime(
                     "%Y-%m-%d_%H-%M-%S"
                 )
-                + ".yml"
+                + ".yaml"
             )
 
             if filepath.name in existing_files:
@@ -159,7 +159,7 @@ class AV3LocalArchive:
             )
 
     def __load_archive_thread(self):
-        with open(self.path / "thread.yml", "r", encoding="utf-8") as thread_rs:
+        with open(self.path / "thread.yaml", "r", encoding="utf-8") as thread_rs:
             archive_thread = av3_load_thread_yaml(yaml.safe_load(thread_rs.read()))
 
             if (
@@ -173,7 +173,7 @@ class AV3LocalArchive:
 
     def __dump_archive_thread(self):
         if self.archive_thread:
-            with open(self.path / "thread.yml", "w", encoding="utf-8") as thread_ws:
+            with open(self.path / "thread.yaml", "w", encoding="utf-8") as thread_ws:
                 thread_ws.write(
                     av3_get_thread_yaml_dump_str(archive_thread=self.archive_thread)
                 )
