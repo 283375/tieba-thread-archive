@@ -61,7 +61,8 @@ class AV3LocalArchive:
         self.audios = set()
         self.videos = set()
 
-        self.load()
+        if av3_validate_path(self.__path):
+            self.load()
 
     @property
     def path(self):
