@@ -6,6 +6,8 @@ import yaml
 
 from .file_structure import AV3File_InfoYaml
 
+__all__ = ("av3_validate_path",)
+
 
 def av3_validate_path(path: Union[str, PathLike]) -> bool:
     path = Path(path)
