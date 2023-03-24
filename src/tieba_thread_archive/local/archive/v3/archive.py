@@ -61,6 +61,8 @@ class AV3LocalArchive:
         self.audios = set()
         self.videos = set()
 
+        self.load()
+
     @property
     def path(self):
         return self.__path
