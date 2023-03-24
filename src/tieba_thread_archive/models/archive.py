@@ -59,13 +59,9 @@ class ArchiveThread:
     __slots__ = (
         "archive_time",
         "thread_info",
-        "archive_options",
         "posts",
         "subposts",
         "users",
-        "images",
-        "audios",
-        "videos",
     )
 
     archive_time: int
@@ -73,9 +69,6 @@ class ArchiveThread:
     posts: Posts
     subposts: Dict[int, SubPosts]
     users: Set[User]
-    images: Set[ContentImage]
-    audios: Set[ContentAudio]
-    videos: Set[ContentVideo]
 
     def __init__(
         self,
@@ -85,18 +78,12 @@ class ArchiveThread:
         posts: Posts,
         subposts: Dict[int, SubPosts],
         users: Set[User],
-        images: Set[ContentImage],
-        audios: Set[ContentAudio],
-        videos: Set[ContentVideo],
     ):
         self.archive_time = archive_time
         self.thread_info = thread_info
         self.posts = posts
         self.subposts = subposts
         self.users = users
-        self.images = images
-        self.audios = audios
-        self.videos = videos
 
     def __setattr__(self, name: str, value: Any):
         if name == "time":
@@ -136,10 +123,21 @@ class ArchiveThread:
             if _other_subposts is not None:
                 self.subposts[id] = _other_subposts | self.subposts[id]
         self.users = other.users | self.users
-        self.images = other.images | self.images
-        self.audios = other.audios | self.audios
-        self.videos = other.videos | self.videos
         return self
+
+    def images(self):
+        return self.posts.images()
+
+    def audios(self):
+        audios = self.posts.audios()
+
+        for _subposts in self.subposts.values():
+            audios = _subposts.audios() | audios
+
+        return audios
+
+    def videos(self):
+        return self.posts.videos()
 
     def __or__(self, other):
         return self.update(other)

@@ -92,9 +92,6 @@ class AV3ArchiveThread:
         posts: AV3Posts.ArchivePart
         subposts: Dict[int, AV3SubPosts.ArchivePart]
         users: List[AV3User.ArchivePart]
-        images: List[AV3ContentImage.ArchivePart]
-        audios: List[AV3ContentAudio.ArchivePart]
-        videos: List[AV3ContentVideo.ArchivePart]
 
     @staticmethod
     def archive_dump(archive_thread: ArchiveThread) -> ArchivePart:
@@ -107,15 +104,6 @@ class AV3ArchiveThread:
                 for id, subpost in archive_thread.subposts.items()
             },
             "users": [AV3User.archive_dump(user) for user in archive_thread.users],
-            "images": [
-                AV3ContentImage.archive_dump(image) for image in archive_thread.images
-            ],
-            "audios": [
-                AV3ContentAudio.archive_dump(audio) for audio in archive_thread.audios
-            ],
-            "videos": [
-                AV3ContentVideo.archive_dump(video) for video in archive_thread.videos
-            ],
         }
 
     @staticmethod
@@ -131,7 +119,4 @@ class AV3ArchiveThread:
                 for id, subpost in archive["subposts"].items()
             },
             users=users,
-            images={AV3ContentImage.archive_load(image) for image in archive["images"]},
-            audios={AV3ContentAudio.archive_load(audio) for audio in archive["audios"]},
-            videos={AV3ContentVideo.archive_load(video) for video in archive["videos"]},
         )

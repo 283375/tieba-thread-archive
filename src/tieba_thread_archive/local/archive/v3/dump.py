@@ -1,6 +1,6 @@
 from os import PathLike
 from pathlib import Path
-from typing import Union
+from typing import Set, Union
 
 import yaml
 
@@ -9,6 +9,12 @@ from .file_structure import *
 from .load import *
 from .models import *
 from .validate import av3_validate_path
+
+__all__ = (
+    "av3_get_info_yaml_dump_str",
+    "av3_get_thread_yaml_dump_str",
+    "av3_get_assets_yaml_dump_str",
+)
 
 
 def av3_get_info_yaml_dump_str(
@@ -31,6 +37,17 @@ def av3_get_thread_yaml_dump_str(*, archive_thread: ArchiveThread) -> str:
     return yaml.safe_dump(thread_yaml, allow_unicode=True, sort_keys=False)
 
 
+def av3_get_assets_yaml_dump_str(
+    *, images: Set[ContentImage], audios: Set[ContentAudio], videos: Set[ContentVideo]
+) -> str:
+    assets_yaml: AV3File_AssetsYaml = {
+        "images": [AV3ContentImage.archive_dump(image) for image in images],
+        "audios": [AV3ContentAudio.archive_dump(audio) for audio in audios],
+        "videos": [AV3ContentVideo.archive_dump(video) for video in videos],
+    }
+    return yaml.safe_dump(assets_yaml, allow_unicode=True, sort_keys=False)
+
+
 def av3_dump_archive(
     path: Union[str, PathLike],
     archive_thread: ArchiveThread,
@@ -40,7 +57,9 @@ def av3_dump_archive(
 
     if av3_validate_path(path):
         with open(path / "thread.yml", "r+", encoding="utf-8") as thread_yaml_rws:
-            _archive_thread = av3_load_thread(yaml.safe_load(thread_yaml_rws.read()))
+            _archive_thread = av3_load_thread_yaml(
+                yaml.safe_load(thread_yaml_rws.read())
+            )
             _archive_thread |= archive_thread
             thread_yaml_rws.seek(0)
             thread_yaml_rws.truncate()
@@ -49,7 +68,7 @@ def av3_dump_archive(
             )
 
         with open(path / "info.yml", "r+", encoding="utf-8") as info_yaml_rws:
-            _, _, archive_update_info = av3_load_info(
+            _, _, archive_update_info = av3_load_info_yaml(
                 yaml.safe_load(info_yaml_rws.read())
             )
             archive_update_info.last_update_time = archive_thread.archive_time

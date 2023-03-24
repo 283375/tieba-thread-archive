@@ -1,8 +1,8 @@
-from typing import Literal, TypedDict
+from typing import List, Literal, TypedDict
 
 from .models import *
 
-__all__ = ("AV3File_InfoYaml", "AV3File_ThreadYaml")
+__all__ = ("AV3File_InfoYaml", "AV3File_ThreadYaml", "AV3File_AssetsYaml")
 
 
 class AV3File_InfoYaml(TypedDict):
@@ -13,3 +13,9 @@ class AV3File_InfoYaml(TypedDict):
 
 
 AV3File_ThreadYaml = AV3ArchiveThread.ArchivePart
+
+
+class AV3File_AssetsYaml(TypedDict):
+    images: List[AV3ContentImage.ArchivePart]
+    audios: List[AV3ContentAudio.ArchivePart]
+    videos: List[AV3ContentVideo.ArchivePart]

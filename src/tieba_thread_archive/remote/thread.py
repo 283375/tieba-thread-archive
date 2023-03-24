@@ -174,7 +174,4 @@ class RemoteThread:
             posts=posts,
             subposts=subposts,
             users=users,
-            images=assets["images"],
-            audios=assets["audios"],
-            videos=assets["videos"],
         )

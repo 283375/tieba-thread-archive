@@ -1,10 +1,11 @@
+from functools import reduce
 from typing import Iterable, List, Optional, Union
 
 from google.protobuf.internal.containers import RepeatedCompositeFieldContainer
 
 from ..remote.protobuf.common import Post_pb2, SubPostList_pb2, User_pb2
 from .agree import Agree
-from .content import Contents
+from .content import ContentAudio, ContentImage, Contents, ContentVideo
 from .user import User
 
 __all__ = ("SubPost", "SubPosts", "Post", "Posts")
@@ -31,6 +32,11 @@ class SubPost:
             contents=Contents.from_protobuf(pb.content),
             time=pb.time,
         )
+
+    def audios(self):
+        return {
+            content for content in self.contents if isinstance(content, ContentAudio)
+        }
 
     def __repr__(self):
         return f"SubPost({self.id})"
@@ -69,6 +75,9 @@ class SubPosts(List[SubPost]):
 
     def sort(self):
         self = sorted(self, key=lambda x: x.id)
+
+    def audios(self):
+        return reduce(lambda c1, c2: c2 | c1, [subpost.audios() for subpost in self])
 
     def __add__(self, other):
         if isinstance(other, self.__class__):
@@ -159,6 +168,21 @@ class Post:
             contents=Contents.from_protobuf(pb.content),
         )
 
+    def images(self):
+        return {
+            content for content in self.contents if isinstance(content, ContentImage)
+        }
+
+    def audios(self):
+        return {
+            content for content in self.contents if isinstance(content, ContentAudio)
+        }
+
+    def videos(self):
+        return {
+            content for content in self.contents if isinstance(content, ContentVideo)
+        }
+
     def __repr__(self):
         return f"Post({self.id}, {self.floor}L)"
 
@@ -190,6 +214,15 @@ class Posts(List[Post]):
 
     def sort(self):
         self = sorted(self, key=lambda x: x.id)
+
+    def images(self):
+        return reduce(lambda c1, c2: c2 | c1, [post.images() for post in self])
+
+    def audios(self):
+        return reduce(lambda c1, c2: c2 | c1, [post.audios() for post in self])
+
+    def videos(self):
+        return reduce(lambda c1, c2: c2 | c1, [post.videos() for post in self])
 
     def __repr__(self):
         display_posts = self[:3]
