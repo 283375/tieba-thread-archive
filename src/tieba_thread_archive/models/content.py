@@ -185,6 +185,10 @@ class ContentAudio(ContentBase):
         self.voice_md5 = voice_md5
         self.filename = f"{voice_md5}.mp3"
 
+    @property
+    def src(self):
+        return f"https://tiebac.baidu.com/c/p/voice?voice_md5={self.voice_md5}&play_from=pb_voice_play"
+
     @classmethod
     def from_protobuf(cls, pb):
         return cls(voice_md5=pb.voice_md5)
