@@ -4,6 +4,8 @@ from typing import Any, Callable
 
 class Progress:
     __slots__ = (
+        "__init_total_step",
+        "__init_total_progress",
         "__step",
         "__total_step",
         "__progress",
@@ -21,6 +23,9 @@ class Progress:
         total_step: int = 1,
         total_progress: int = 0,
     ):
+        self.__init_total_step = total_step
+        self.__init_total_progress = total_progress
+
         self.__step = 1
         self.__progress = 0
         self.__total_step = total_step
@@ -41,7 +46,7 @@ class Progress:
         return self
 
     def clear_step(self):
-        self.__step = 0
+        self.__step = 1
         self.__total_step = 1
         self._invoke_progress_hooks()
 
@@ -53,6 +58,18 @@ class Progress:
     def clear(self):
         self.clear_step()
         self.clear_progress()
+
+    def reset_step(self):
+        self.__step = 1
+        self.__total_step = self.__init_total_step
+
+    def reset_progress(self):
+        self.__progress = 0
+        self.__total_progress = self.__init_total_progress
+
+    def reset(self):
+        self.reset_step()
+        self.reset_progress()
 
     def add_progress_hook(self, hook: Callable[["Progress"], Any]):
         if hook not in self.__progress_hooks:
