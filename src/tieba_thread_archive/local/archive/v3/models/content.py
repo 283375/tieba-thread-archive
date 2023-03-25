@@ -142,6 +142,19 @@ class AV3ContentVideo(AV3ContentBase):
         )
 
 
+class AV3ContentPhoneNumber(AV3ContentBase):
+    class ArchivePart(AV3ContentBase.ArchivePart):
+        text: str
+
+    @staticmethod
+    def archive_dump(content: ContentText) -> ArchivePart:
+        return {"type": content.type, "text": content.text}
+
+    @staticmethod
+    def archive_load(archive: ArchivePart):
+        return ContentText(text=archive["text"])
+
+
 class AV3ContentAudio(AV3ContentBase):
     class ArchivePart(AV3ContentBase.ArchivePart):
         voice_md5: str
@@ -164,6 +177,7 @@ class AV3ContentTypeMapping(dict):
             3: AV3ContentImage,
             4: AV3ContentAt,
             5: AV3ContentVideo,
+            9: AV3ContentPhoneNumber,
             10: AV3ContentAudio,
         }
 

@@ -177,6 +177,24 @@ class ContentVideo(ContentBase):
         return f"ContentVideo({self.filename or self.text})"
 
 
+class ContentPhoneNumber(ContentBase):
+    __slots__ = ("text",)
+    type = 9
+
+    def __init__(self, *, text: str):
+        self.text = text
+
+    @classmethod
+    def from_protobuf(cls, pb):
+        return cls(text=pb.text)
+
+    def __hash__(self):
+        return hash(self.text)
+
+    def __repr__(self):
+        return f"ContentPhoneNumber({self.text})"
+
+
 class ContentAudio(ContentBase):
     __slots__ = ("voice_md5", "filename")
     type = 10
@@ -209,6 +227,7 @@ class ContentTypeMapping(dict):
             3: ContentImage,
             4: ContentAt,
             5: ContentVideo,
+            9: ContentPhoneNumber,
             10: ContentAudio,
         }
 
