@@ -1,12 +1,15 @@
 import fnmatch
+from concurrent import futures
 from datetime import datetime
 from os import PathLike
 from pathlib import Path
-from typing import List, Optional, Set, Union
+from typing import List, Optional, Set, Tuple, Union
 
+import requests
 import yaml
 
 from ....models import *
+from ....models.progress import Progress
 from .dump import *
 from .file_structure import *
 from .load import *
@@ -17,6 +20,7 @@ __all__ = ("AV3LocalArchive",)
 
 class AV3LocalArchive:
     __slots__ = (
+        "__assets_progress",
         "__path",
         "__history",
         "archive_options",
@@ -26,6 +30,8 @@ class AV3LocalArchive:
         "audios",
         "videos",
     )
+
+    __assets_progress: Progress
 
     __path: Path
     __history: List[ArchiveThread]
@@ -40,6 +46,8 @@ class AV3LocalArchive:
     videos: Set[ContentVideo]
 
     def __init__(self, path: Union[str, PathLike]):
+        self.__assets_progress = Progress()
+
         self.__path = Path(path)
 
         if not self.__path.exists():
@@ -65,6 +73,10 @@ class AV3LocalArchive:
             self.load()
 
     @property
+    def assets_progress(self):
+        return self.__assets_progress
+
+    @property
     def path(self):
         return self.__path
 
@@ -79,6 +91,22 @@ class AV3LocalArchive:
     @property
     def thread_file(self):
         return self.path / "thread.yaml"
+
+    @property
+    def images_dir(self):
+        return self.path / "images"
+
+    @property
+    def audios_dir(self):
+        return self.path / "audios"
+
+    @property
+    def videos_dir(self):
+        return self.path / "videos"
+
+    @property
+    def portraits_dir(self):
+        return self.path / "portraits"
 
     @property
     def assets_file(self):
@@ -241,3 +269,82 @@ class AV3LocalArchive:
                 raise ValueError("TODO: this should not happen")
 
             self.archive_update_info.last_update_time = new_archive_thread.archive_time
+
+    def __executor_task_get_task_tuple(
+        self, session: requests.Session, content: ContentBase
+    ) -> Tuple[requests.Session, requests.PreparedRequest, Path]:
+        if isinstance(content, ContentImage):
+            task_tuple = (
+                session,
+                requests.Request("GET", content.origin_src).prepare(),
+                self.images_dir / content.filename,
+            )
+        elif isinstance(content, ContentAudio):
+            task_tuple = (
+                session,
+                requests.Request("GET", content.src).prepare(),
+                self.audios_dir / content.filename,
+            )
+        elif isinstance(content, ContentVideo):
+            assert content.filename is not None
+
+            task_tuple = (
+                session,
+                requests.Request("GET", content.link).prepare(),
+                self.videos_dir / content.filename,
+            )
+        else:
+            raise NotImplementedError(
+                f"{content.__class__.__name__} not supported yet."
+            )
+
+        return task_tuple
+
+    def __executor_task_download_asset(
+        self,
+        session: requests.Session,
+        prepared_request: requests.PreparedRequest,
+        filepath: Path,
+        overwrite: bool,
+    ):
+        if filepath.exists() and not overwrite:
+            return
+
+        response = session.send(prepared_request)
+
+        filepath.parent.mkdir(exist_ok=True)
+        with open(filepath, "wb") as file_ws:
+            file_ws.write(response.content)
+
+    def download_assets(self, overwrite_exist=False):
+        with requests.Session() as session:
+            with futures.ThreadPoolExecutor() as executor:
+                self.__assets_progress.reset()
+
+                tasks = (
+                    [
+                        self.__executor_task_get_task_tuple(session, image)
+                        for image in self.images
+                    ]
+                    + [
+                        self.__executor_task_get_task_tuple(session, audio)
+                        for audio in self.audios
+                    ]
+                    + [
+                        self.__executor_task_get_task_tuple(session, video)
+                        for video in self.videos
+                        if video.link is not None
+                    ]
+                )
+
+                self.__assets_progress.total_progress = len(tasks)
+
+                executor_tasks = [
+                    executor.submit(
+                        self.__executor_task_download_asset, *task, overwrite_exist
+                    )
+                    for task in tasks
+                ]
+
+                for _ in futures.as_completed(executor_tasks):
+                    self.__assets_progress += 1
