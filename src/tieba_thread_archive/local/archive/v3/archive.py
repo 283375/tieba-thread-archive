@@ -1,5 +1,6 @@
 import fnmatch
 from concurrent import futures
+from copy import deepcopy
 from datetime import datetime
 from os import PathLike
 from pathlib import Path
@@ -258,7 +259,7 @@ class AV3LocalArchive:
                 # TODO: log
                 return
 
-            self.__history.append(self.archive_thread)
+            self.__history.append(deepcopy(self.archive_thread))
 
             self.archive_thread.update(new_archive_thread)
             self.images = new_archive_thread.images() | self.images
