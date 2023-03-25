@@ -62,10 +62,12 @@ class Progress:
     def reset_step(self):
         self.__step = 1
         self.__total_step = self.__init_total_step
+        self._invoke_progress_hooks()
 
     def reset_progress(self):
         self.__progress = 0
         self.__total_progress = self.__init_total_progress
+        self._invoke_progress_hooks()
 
     def reset(self):
         self.reset_step()
