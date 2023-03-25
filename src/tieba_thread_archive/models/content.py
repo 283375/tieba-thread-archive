@@ -183,7 +183,7 @@ class ContentAudio(ContentBase):
 
     def __init__(self, *, voice_md5: str):
         self.voice_md5 = voice_md5
-        self.filename = f"{voice_md5}.mp3"
+        self.filename = f"{voice_md5}.amr"
 
     @property
     def src(self):
@@ -197,7 +197,7 @@ class ContentAudio(ContentBase):
         return hash(self.voice_md5)
 
     def __repr__(self):
-        return f"ContentAudio({self.voice_md5}.mp3)"
+        return f"ContentAudio({self.voice_md5})"
 
 
 class ContentTypeMapping(dict):
