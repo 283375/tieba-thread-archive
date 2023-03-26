@@ -307,6 +307,22 @@ class AV3LocalArchive:
                 for video in self.videos
                 if video.link and video.filename
             )
+        if (
+            self.archive_options.portraits
+            and self.archive_thread is not None
+            and self.archive_thread.users
+        ):
+            tasks.extend(
+                (
+                    session,
+                    requests.Request(
+                        "GET",
+                        f"http://himg.bdimg.com/sys/portraith/item/{user.portrait}",
+                    ).prepare(),
+                    self.portraits_dir / f"{user.id}.jpg",
+                )
+                for user in self.archive_thread.users
+            )
 
         return tasks
 
