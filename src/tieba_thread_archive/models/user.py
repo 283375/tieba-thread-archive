@@ -14,6 +14,7 @@ class User:
         "level_id",
         "is_bawu",
         "bawu_type",
+        "ip_address",
     )
 
     def __init__(
@@ -26,6 +27,7 @@ class User:
         level_id: int,
         is_bawu: int,
         bawu_type: str,
+        ip_address: str,
     ):
         self.id = id
         self.name = name
@@ -34,6 +36,7 @@ class User:
         self.level_id = level_id
         self.is_bawu = is_bawu
         self.bawu_type = bawu_type
+        self.ip_address = ip_address
 
     @classmethod
     def from_protobuf(cls, pb: User_pb2.User):
@@ -45,6 +48,7 @@ class User:
             level_id=pb.level_id,
             is_bawu=pb.is_bawu,
             bawu_type=pb.bawu_type,
+            ip_address=pb.ip_address,
         )
 
     def __hash__(self):

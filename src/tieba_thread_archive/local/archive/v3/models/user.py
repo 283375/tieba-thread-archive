@@ -16,6 +16,7 @@ class AV3User:
         level_id: int
         is_bawu: int
         bawu_type: NotRequired[str]
+        ip_address: str
 
     @staticmethod
     def archive_dump(user: User) -> ArchivePart:
@@ -26,6 +27,7 @@ class AV3User:
             "portrait": user.portrait,
             "level_id": user.level_id,
             "is_bawu": user.is_bawu,
+            "ip_address": user.ip_address,
         }
 
         if user.is_bawu:
@@ -43,4 +45,5 @@ class AV3User:
             level_id=archive["level_id"],
             is_bawu=archive["is_bawu"],
             bawu_type=archive.get("bawu_type", ""),
+            ip_address=archive["ip_address"],
         )
