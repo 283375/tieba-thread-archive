@@ -271,35 +271,44 @@ class AV3LocalArchive:
 
             self.archive_update_info.last_update_time = new_archive_thread.archive_time
 
-    def __executor_task_get_task_tuple(
-        self, session: requests.Session, content: ContentBase
-    ) -> Tuple[requests.Session, requests.PreparedRequest, Path]:
-        if isinstance(content, ContentImage):
-            task_tuple = (
-                session,
-                requests.Request("GET", content.origin_src).prepare(),
-                self.images_dir / content.filename,
-            )
-        elif isinstance(content, ContentAudio):
-            task_tuple = (
-                session,
-                requests.Request("GET", content.src).prepare(),
-                self.audios_dir / content.filename,
-            )
-        elif isinstance(content, ContentVideo):
-            assert content.filename is not None
+    def __executor_task_get_tasks(
+        self, session: requests.Session
+    ) -> List[Tuple[requests.Session, requests.PreparedRequest, Path]]:
+        if self.archive_options is None:
+            raise ValueError("Need archive_options before downloading assets.")
 
-            task_tuple = (
-                session,
-                requests.Request("GET", content.link).prepare(),
-                self.videos_dir / content.filename,
+        tasks = []
+
+        if self.archive_options.images and self.images:
+            tasks.extend(
+                (
+                    session,
+                    requests.Request("GET", image.origin_src).prepare(),
+                    self.images_dir / image.filename,
+                )
+                for image in self.images
             )
-        else:
-            raise NotImplementedError(
-                f"{content.__class__.__name__} not supported yet."
+        if self.archive_options.audios and self.audios:
+            tasks.extend(
+                (
+                    session,
+                    requests.Request("GET", audio.src).prepare(),
+                    self.audios_dir / audio.filename,
+                )
+                for audio in self.audios
+            )
+        if self.archive_options.videos and self.videos:
+            tasks.extend(
+                (
+                    session,
+                    requests.Request("GET", video.link).prepare(),
+                    self.videos_dir / video.filename,
+                )
+                for video in self.videos
+                if video.link and video.filename
             )
 
-        return task_tuple
+        return tasks
 
     def __executor_task_download_asset(
         self,
@@ -319,33 +328,18 @@ class AV3LocalArchive:
 
     def download_assets(self, overwrite_exist=False):
         with requests.Session() as session:
-            with futures.ThreadPoolExecutor() as executor:
-                self.__assets_progress.reset()
+            tasks = self.__executor_task_get_tasks(session)
+            if tasks:
+                with futures.ThreadPoolExecutor() as executor:
+                    self.__assets_progress.reset()
+                    self.__assets_progress.total_progress = len(tasks)
 
-                tasks = (
-                    [
-                        self.__executor_task_get_task_tuple(session, image)
-                        for image in self.images
+                    executor_tasks = [
+                        executor.submit(
+                            self.__executor_task_download_asset, *task, overwrite_exist
+                        )
+                        for task in tasks
                     ]
-                    + [
-                        self.__executor_task_get_task_tuple(session, audio)
-                        for audio in self.audios
-                    ]
-                    + [
-                        self.__executor_task_get_task_tuple(session, video)
-                        for video in self.videos
-                        if video.link is not None
-                    ]
-                )
 
-                self.__assets_progress.total_progress = len(tasks)
-
-                executor_tasks = [
-                    executor.submit(
-                        self.__executor_task_download_asset, *task, overwrite_exist
-                    )
-                    for task in tasks
-                ]
-
-                for _ in futures.as_completed(executor_tasks):
-                    self.__assets_progress += 1
+                    for _ in futures.as_completed(executor_tasks):
+                        self.__assets_progress += 1
