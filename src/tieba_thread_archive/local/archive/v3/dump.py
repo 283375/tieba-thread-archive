@@ -18,7 +18,7 @@ def av3_dump_info_yaml_str(
     *,
     thread_info: ThreadInfo,
     archive_options: ArchiveOptions,
-    archive_update_info: ArchiveUpdateInfo
+    archive_update_info: ArchiveUpdateInfo,
 ) -> str:
     info_yaml: AV3File_InfoYaml = {
         "version": 3,

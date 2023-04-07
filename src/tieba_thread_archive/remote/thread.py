@@ -1,8 +1,9 @@
 import time
 from concurrent import futures
-from typing import Callable, Concatenate, Dict, List, ParamSpec, Set, TypedDict, TypeVar
+from typing import Callable, Concatenate, Dict, List, Set, TypedDict, TypeVar
 
 import requests
+from typing_extensions import ParamSpec
 
 from ..models.archive import ArchiveThread, ThreadInfo
 from ..models.content import ContentAudio, ContentImage, ContentVideo

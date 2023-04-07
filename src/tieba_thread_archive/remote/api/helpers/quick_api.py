@@ -1,7 +1,8 @@
-from typing import Any, Callable, Dict, ParamSpec
+from typing import Any, Callable, Dict
 
 import requests
 from google.protobuf.message import Message
+from typing_extensions import ParamSpec
 
 from .headers import mobile_headers, mobile_protobuf_headers, mobile_url_encoded_headers
 from .pack import *

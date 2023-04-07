@@ -220,16 +220,18 @@ class ContentAudio(ContentBase):
 
 class ContentTypeMapping(dict):
     def __init__(self):
-        self |= {
-            0: ContentText,
-            1: ContentLink,
-            2: ContentEmoticon,
-            3: ContentImage,
-            4: ContentAt,
-            5: ContentVideo,
-            9: ContentPhoneNumber,
-            10: ContentAudio,
-        }
+        self.update(
+            {
+                0: ContentText,
+                1: ContentLink,
+                2: ContentEmoticon,
+                3: ContentImage,
+                4: ContentAt,
+                5: ContentVideo,
+                9: ContentPhoneNumber,
+                10: ContentAudio,
+            }
+        )
 
     def get(self, __key: int) -> ContentBase:
         item = super().get(__key, None)

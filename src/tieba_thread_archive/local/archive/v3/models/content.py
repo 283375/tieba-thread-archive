@@ -170,16 +170,18 @@ class AV3ContentAudio(AV3ContentBase):
 
 class AV3ContentTypeMapping(dict):
     def __init__(self):
-        self |= {
-            0: AV3ContentText,
-            1: AV3ContentLink,
-            2: AV3ContentEmoticon,
-            3: AV3ContentImage,
-            4: AV3ContentAt,
-            5: AV3ContentVideo,
-            9: AV3ContentPhoneNumber,
-            10: AV3ContentAudio,
-        }
+        self.update(
+            {
+                0: AV3ContentText,
+                1: AV3ContentLink,
+                2: AV3ContentEmoticon,
+                3: AV3ContentImage,
+                4: AV3ContentAt,
+                5: AV3ContentVideo,
+                9: AV3ContentPhoneNumber,
+                10: AV3ContentAudio,
+            }
+        )
 
     def get(self, __key: Any) -> AV3ContentBase:
         item = super().get(__key, None)
