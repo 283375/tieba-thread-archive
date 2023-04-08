@@ -48,7 +48,11 @@ class SubPost:
         return isinstance(other, self.__class__) and self.time <= other.time
 
     def __eq__(self, other):
-        return isinstance(other, self.__class__) and self.id == other.id
+        return (
+            isinstance(other, self.__class__)
+            and self.id == other.id
+            and self.contents == other.contents
+        )
 
 
 class SubPosts(List[SubPost]):
@@ -193,7 +197,11 @@ class Post:
         return isinstance(other, self.__class__) and self.floor <= other.floor
 
     def __eq__(self, other):
-        return isinstance(other, self.__class__) and self.id == other.id
+        return (
+            isinstance(other, self.__class__)
+            and self.id == other.id
+            and self.contents == other.contents
+        )
 
 
 class Posts(List[Post]):

@@ -117,11 +117,11 @@ class ArchiveThread:
 
         self.archive_time = other.archive_time
         self.thread_info = other.thread_info
-        self.posts = other.posts | self.posts
+        self.posts = self.posts | other.posts
         for id in self.subposts.keys():
             _other_subposts = other.subposts.get(id)
             if _other_subposts is not None:
-                self.subposts[id] = _other_subposts | self.subposts[id]
+                self.subposts[id] = self.subposts[id] | _other_subposts
         self.users = other.users | self.users
         return self
 
