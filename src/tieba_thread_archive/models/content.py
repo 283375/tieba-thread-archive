@@ -231,7 +231,7 @@ class ContentTopic(ContentBase):
     def from_protobuf(cls, pb):
         return cls(text=pb.text, link=pb.link)
 
-    def hash(self):
+    def __hash__(self):
         return hash(self.text)
 
     def __repr__(self):
