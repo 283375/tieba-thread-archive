@@ -40,3 +40,27 @@ extend_skip = ["src/tieba_thread_archive/remote/protobuf"]
 [tool.pytest.ini_options]
 pythonpath = "."
 testpaths = "tests"
+
+
+[tool.tox]
+legacy_tox_ini = """
+[tox]
+requires = tox>=4
+env_list = py{38, 39, 310}
+
+[gh-actions]
+python =
+    3.8: py38
+    3.9: py39
+    3.10: py310
+
+[testenv]
+description = run unit tests
+deps =
+    -r requirements.txt
+    pytest>=7
+    pytest-sugar
+skip_install = true
+commands =
+    pytest . {posargs:tests}
+"""
