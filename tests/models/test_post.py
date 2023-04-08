@@ -1,6 +1,11 @@
-from tieba_thread_archive.models import *
-from tieba_thread_archive.remote.api.base import get_posts
-from tieba_thread_archive.remote.protobuf.response.PbPageResIdl_pb2 import PbPageResIdl
+from src.tieba_thread_archive.models import *
+from src.tieba_thread_archive.remote.api.base import get_posts
+from src.tieba_thread_archive.remote.protobuf.response.PbPageResIdl_pb2 import (
+    PbPageResIdl,
+)
+from tests.models.mock.post import MockPosts
+
+mock_posts = MockPosts(post_num=3)
 
 
 class Test_Post_Posts:
@@ -13,4 +18,13 @@ class Test_Post_Posts:
         assert posts[0].title == "整了个烂活"
 
     def test_posts_functionality(self):
-        pass
+        post_1 = mock_posts[0]
+        post_2 = mock_posts[1]
+        post_3 = mock_posts[2]
+
+        posts_1 = Posts([post_1, post_2])
+        posts_2 = Posts([post_2, post_3])
+
+        full_posts = posts_1 + posts_2
+
+        assert full_posts == mock_posts
