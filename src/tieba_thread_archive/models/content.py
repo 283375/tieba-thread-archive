@@ -14,6 +14,7 @@ __all__ = (
     "ContentImage",
     "ContentAt",
     "ContentVideo",
+    "ContentPhoneNumber",
     "ContentAudio",
     "ContentTopic",
     "ContentSegment",

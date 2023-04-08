@@ -10,6 +10,7 @@ __all__ = (
     "AV3ContentImage",
     "AV3ContentAt",
     "AV3ContentVideo",
+    "AV3ContentPhoneNumber",
     "AV3ContentAudio",
     "AV3ContentTopic",
     "AV3ContentTypeMapping",
