@@ -15,6 +15,7 @@ __all__ = (
     "ContentAt",
     "ContentVideo",
     "ContentAudio",
+    "ContentTopic",
     "ContentSegment",
     "Contents",
 )
@@ -218,6 +219,25 @@ class ContentAudio(ContentBase):
         return f"ContentAudio({self.voice_md5})"
 
 
+class ContentTopic(ContentBase):
+    __slots__ = ("text", "link")
+    type = 18
+
+    def __init__(self, *, text: str, link: str):
+        self.text = text
+        self.link = link
+
+    @classmethod
+    def from_protobuf(cls, pb):
+        return cls(text=pb.text, link=pb.link)
+
+    def hash(self):
+        return hash(self.text)
+
+    def __repr__(self):
+        return f"ContentTopic({self.text})"
+
+
 class ContentTypeMapping(dict):
     def __init__(self):
         self.update(
@@ -230,13 +250,14 @@ class ContentTypeMapping(dict):
                 5: ContentVideo,
                 9: ContentPhoneNumber,
                 10: ContentAudio,
+                18: ContentTopic,
             }
         )
 
     def get(self, __key: int) -> ContentBase:
         item = super().get(__key, None)
         if item is None:
-            raise KeyError(f"Unknown content type {item}")
+            raise KeyError(f"Unknown content type {__key}")
         return item
 
     def __getitem__(self, __key: int):

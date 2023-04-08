@@ -11,6 +11,7 @@ __all__ = (
     "AV3ContentAt",
     "AV3ContentVideo",
     "AV3ContentAudio",
+    "AV3ContentTopic",
     "AV3ContentTypeMapping",
     "AV3ContentSegment",
     "AV3Contents",
@@ -168,6 +169,20 @@ class AV3ContentAudio(AV3ContentBase):
         return ContentAudio(voice_md5=archive["voice_md5"])
 
 
+class AV3ContentTopic(AV3ContentBase):
+    class ArchivePart(AV3ContentBase.ArchivePart):
+        text: str
+        link: str
+
+    @staticmethod
+    def archive_dump(content: ContentTopic) -> ArchivePart:
+        return {"type": content.type, "text": content.text, "link": content.link}
+
+    @staticmethod
+    def archive_load(archive: ArchivePart):
+        return ContentTopic(text=archive["text"], link=archive["link"])
+
+
 class AV3ContentTypeMapping(dict):
     def __init__(self):
         self.update(
@@ -180,6 +195,7 @@ class AV3ContentTypeMapping(dict):
                 5: AV3ContentVideo,
                 9: AV3ContentPhoneNumber,
                 10: AV3ContentAudio,
+                18: AV3ContentTopic,
             }
         )
 
