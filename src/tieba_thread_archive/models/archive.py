@@ -118,10 +118,12 @@ class ArchiveThread:
         self.archive_time = other.archive_time
         self.thread_info = other.thread_info
         self.posts = self.posts | other.posts
-        for id in self.subposts.keys():
-            _other_subposts = other.subposts.get(id)
-            if _other_subposts is not None:
-                self.subposts[id] = self.subposts[id] | _other_subposts
+        pids = list(self.subposts.keys()) + list(other.subposts.keys())
+        for pid in pids:
+            if self.subposts.get(pid):
+                self.subposts[pid] = self.subposts[pid] | other.subposts.get(pid, {})
+            else:
+                self.subposts.setdefault(pid, other.subposts[pid])
         self.users = other.users | self.users
         return self
 
