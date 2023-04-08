@@ -1,3 +1,30 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "tieba-thread-archive"
+version = "0.1.0"
+authors = [{ name = "283375", email = "log_283375@163.com" }]
+description = "Archive any post on tieba as you want."
+readme = "README.md"
+requires-python = ">=3.8"
+dependencies = [
+  "requests~=2.28.2",
+  "protobuf~=4.21.12",
+  "yarl~=1.8.2",
+  "pyyaml~=6.0",
+  "typing_extensions~=4.5.0",
+]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Programming Language :: Python :: 3",
+]
+
+[project.urls]
+"Homepage" = "https://github.com/283375/tieba-thread-archive"
+"Bug Tracker" = "https://github.com/283375/tieba-thread-archive/issues"
+
 [tool.black]
 extend-exclude = '''
 /(
@@ -12,3 +39,4 @@ extend_skip = ["src/tieba_thread_archive/remote/protobuf"]
 
 [tool.pytest.ini_options]
 pythonpath = "."
+testpaths = "tests"
