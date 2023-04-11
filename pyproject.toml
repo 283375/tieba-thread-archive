@@ -37,10 +37,12 @@ profile = "black"
 src_paths = ["src", "tests"]
 extend_skip = ["src/tieba_thread_archive/remote/protobuf"]
 
+[tool.pyright]
+ignore = ["src/tieba_thread_archive/remote/protobuf"]
+
 [tool.pytest.ini_options]
 pythonpath = "."
 testpaths = "tests"
-
 
 [tool.tox]
 legacy_tox_ini = """
