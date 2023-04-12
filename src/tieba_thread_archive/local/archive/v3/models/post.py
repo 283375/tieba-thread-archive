@@ -1,12 +1,11 @@
-from typing import Iterable, List, TypedDict
+from typing import Dict, Iterable, List, TypedDict
 
 from .....models.post import *
 from .....models.user import User
 from .agree import AV3Agree
 from .content import AV3Contents
-from .user import AV3User
 
-__all__ = ("AV3SubPost", "AV3SubPosts", "AV3Post", "AV3Posts")
+__all__ = ("AV3SubPost", "AV3SubPosts", "AV3DictSubPosts", "AV3Post", "AV3Posts")
 
 
 class AV3SubPost:
@@ -59,6 +58,28 @@ class AV3SubPosts:
         return SubPosts(
             AV3SubPost.archive_load(subpost, user_list) for subpost in archive
         )
+
+
+class AV3DictSubPosts:
+    ArchivePart = Dict[int, AV3SubPosts.ArchivePart]
+
+    @staticmethod
+    def archive_dump(dict_subposts: DictSubPosts) -> ArchivePart:
+        return {
+            pid: AV3SubPosts.archive_dump(subposts)
+            for pid, subposts in dict_subposts.items()
+        }
+
+    @staticmethod
+    def archive_load(archive: ArchivePart, user_list: Iterable[User]):
+        dict_subposts = DictSubPosts()
+
+        for pid, subposts_archive in archive.items():
+            dict_subposts.update_id(
+                pid, AV3SubPosts.archive_load(subposts_archive, user_list)
+            )
+
+        return dict_subposts
 
 
 class AV3Post:

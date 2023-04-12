@@ -1,8 +1,7 @@
-from typing import Dict, List, TypedDict, Union
+from typing import List, TypedDict, Union
 
 from .....models import *
-from .content import AV3ContentAudio, AV3ContentImage, AV3ContentVideo
-from .post import AV3Posts, AV3SubPosts
+from .post import AV3DictSubPosts, AV3Posts
 from .user import AV3User
 
 __all__ = (
@@ -90,7 +89,7 @@ class AV3ArchiveThread:
         archive_time: int
         thread_info: AV3ThreadInfo.ArchivePart
         posts: AV3Posts.ArchivePart
-        subposts: Dict[int, AV3SubPosts.ArchivePart]
+        dict_subposts: AV3DictSubPosts.ArchivePart
         users: List[AV3User.ArchivePart]
 
     @staticmethod
@@ -99,10 +98,7 @@ class AV3ArchiveThread:
             "archive_time": archive_thread.archive_time,
             "thread_info": AV3ThreadInfo.archive_dump(archive_thread.thread_info),
             "posts": AV3Posts.archive_dump(archive_thread.posts),
-            "subposts": {
-                id: AV3SubPosts.archive_dump(subpost)
-                for id, subpost in archive_thread.subposts.items()
-            },
+            "dict_subposts": AV3DictSubPosts.archive_dump(archive_thread.dict_subposts),
             "users": [AV3User.archive_dump(user) for user in archive_thread.users],
         }
 
@@ -114,9 +110,6 @@ class AV3ArchiveThread:
             archive_time=archive["archive_time"],
             thread_info=AV3ThreadInfo.archive_load(archive["thread_info"]),
             posts=AV3Posts.archive_load(archive["posts"], users),
-            subposts={
-                id: AV3SubPosts.archive_load(subpost, users)
-                for id, subpost in archive["subposts"].items()
-            },
+            dict_subposts=AV3DictSubPosts.archive_load(archive["dict_subposts"], users),
             users=users,
         )

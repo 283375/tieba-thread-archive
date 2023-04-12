@@ -2,7 +2,7 @@ from typing import Any, Dict, Optional, Set
 
 from ..remote.protobuf.response.PbPageResIdl_pb2 import PbPageResIdl
 from .content import ContentAudio, ContentImage, ContentVideo
-from .post import Posts, SubPosts
+from .post import DictSubPosts, Posts, SubPosts
 from .user import User
 
 __all__ = ("ThreadInfo", "ArchiveOptions", "ArchiveUpdateInfo", "ArchiveThread")
@@ -60,14 +60,14 @@ class ArchiveThread:
         "archive_time",
         "thread_info",
         "posts",
-        "subposts",
+        "dict_subposts",
         "users",
     )
 
     archive_time: int
     thread_info: ThreadInfo
     posts: Posts
-    subposts: Dict[int, SubPosts]
+    dict_subposts: DictSubPosts
     users: Set[User]
 
     def __init__(
@@ -76,13 +76,13 @@ class ArchiveThread:
         archive_time: int,
         thread_info: ThreadInfo,
         posts: Posts,
-        subposts: Dict[int, SubPosts],
+        dict_subposts: DictSubPosts,
         users: Set[User],
     ):
         self.archive_time = archive_time
         self.thread_info = thread_info
         self.posts = posts
-        self.subposts = subposts
+        self.dict_subposts = dict_subposts
         self.users = users
 
     def __setattr__(self, name: str, value: Any):
@@ -95,7 +95,7 @@ class ArchiveThread:
         elif name == "posts":
             assert isinstance(value, Posts)
         elif name == "subposts":
-            assert isinstance(value, dict) and all(
+            assert isinstance(value, DictSubPosts) and all(
                 isinstance(v, SubPosts) for v in value.values()
             )
         elif name == "users":
@@ -118,12 +118,7 @@ class ArchiveThread:
         self.archive_time = other.archive_time
         self.thread_info = other.thread_info
         self.posts = self.posts | other.posts
-        pids = list(self.subposts.keys()) + list(other.subposts.keys())
-        for pid in pids:
-            if self.subposts.get(pid):
-                self.subposts[pid] = self.subposts[pid] | other.subposts.get(pid, {})
-            else:
-                self.subposts.setdefault(pid, other.subposts[pid])
+        self.dict_subposts = self.dict_subposts | other.dict_subposts
         self.users = other.users | self.users
         return self
 
@@ -133,7 +128,7 @@ class ArchiveThread:
     def audios(self):
         audios = self.posts.audios()
 
-        for _subposts in self.subposts.values():
+        for _subposts in self.dict_subposts.values():
             audios = _subposts.audios() | audios
 
         return audios
@@ -148,7 +143,7 @@ class ArchiveThread:
         return (
             (
                 self.posts == other.posts
-                and self.subposts == other.subposts
+                and self.dict_subposts == other.dict_subposts
                 and self.users == other.users
             )
             if isinstance(other, self.__class__)

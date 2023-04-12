@@ -276,7 +276,7 @@ class ContentSegment:
 
 
 class Contents(List[ContentBase]):
-    def __init__(self, /, __iterable: Optional[Iterable[ContentBase]] = None):
+    def __init__(self, __iterable: Optional[Iterable[ContentBase]] = None, /):
         if __iterable is not None:
             self.clear()
             self.extend(__iterable)

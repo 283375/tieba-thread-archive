@@ -1,13 +1,13 @@
 import time
 from concurrent import futures
-from typing import Callable, Concatenate, Dict, List, Set, TypedDict, TypeVar
+from typing import Callable, Concatenate, List, Set, TypedDict, TypeVar
 
 import requests
 from typing_extensions import ParamSpec
 
 from ..models.archive import ArchiveThread, ThreadInfo
 from ..models.content import ContentAudio, ContentImage, ContentVideo
-from ..models.post import SubPosts
+from ..models.post import DictSubPosts
 from ..models.progress import Progress
 from ..models.user import User
 from ..remote.api import get_posts, get_subposts
@@ -94,7 +94,7 @@ class RemoteThread:
         )
         progress.step += 1
 
-        self.subposts: Dict[int, SubPosts] = {}
+        self.dict_subposts = DictSubPosts()
         request_pids = [post.id for post in self.posts if post.subpost_num > 0]
         progress.total_progress = len(request_pids)
 
@@ -104,7 +104,7 @@ class RemoteThread:
                 for pid in request_pids
             ):
                 pid, subposts = future.result()
-                self.subposts[pid] = subposts
+                self.dict_subposts.update_id(pid, subposts)
                 progress += 1
 
         self.__loaded = True
@@ -113,11 +113,7 @@ class RemoteThread:
 
     @data_loaded
     def get_users(self) -> Set[User]:
-        return {
-            subpost.author
-            for subposts in self.subposts.values()
-            for subpost in subposts
-        } | {post.author for post in self.posts}
+        return self.dict_subposts.users() | self.posts.users()
 
     class GetAssetsReturn(TypedDict):
         images: Set[ContentImage]
@@ -131,7 +127,6 @@ class RemoteThread:
         videos: Set[ContentVideo] = set()
 
         for post in self.posts:
-            # users.add(post.author)
             for content in post.contents:
                 if isinstance(content, ContentImage):
                     images.add(content)
@@ -140,9 +135,8 @@ class RemoteThread:
                 if isinstance(content, ContentVideo):
                     videos.add(content)
 
-        for _subposts in self.subposts.values():
+        for _subposts in self.dict_subposts.values():
             for subpost in _subposts:
-                # users.add(subpost.author)
                 for content in subpost.contents:
                     if isinstance(content, ContentImage):
                         images.add(content)
@@ -155,24 +149,10 @@ class RemoteThread:
 
     @data_loaded
     def to_archive_thread(self):
-        # fill info
-        thread_info = self.info
-
-        # fill posts
-        posts = self.posts
-        __posts_ids = [post.id for post in posts]
-        subposts = {
-            id: subpost for id, subpost in self.subposts.items() if id in __posts_ids
-        }
-
-        # parse contents & users
-        users = self.get_users()
-        assets = self.get_assets()
-
         return ArchiveThread(
             archive_time=self.__loaded_time,
-            thread_info=thread_info,
-            posts=posts,
-            subposts=subposts,
-            users=users,
+            thread_info=self.info,
+            posts=self.posts,
+            dict_subposts=self.dict_subposts,
+            users=self.get_users(),
         )

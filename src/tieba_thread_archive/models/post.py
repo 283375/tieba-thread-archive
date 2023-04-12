@@ -1,14 +1,16 @@
+from copy import deepcopy
 from functools import reduce
-from typing import Iterable, List, Optional, Union
+from typing import Dict, Iterable, List, Optional, Union
 
 from google.protobuf.internal.containers import RepeatedCompositeFieldContainer
+from typing_extensions import Self
 
 from ..remote.protobuf.common import Post_pb2, SubPostList_pb2, User_pb2
 from .agree import Agree
 from .content import ContentAudio, ContentImage, Contents, ContentVideo
 from .user import User
 
-__all__ = ("SubPost", "SubPosts", "Post", "Posts")
+__all__ = ("SubPost", "SubPosts", "DictSubPosts", "Post", "Posts")
 
 
 class SubPost:
@@ -56,7 +58,7 @@ class SubPost:
 
 
 class SubPosts(List[SubPost]):
-    def __init__(self, /, __iterable: Optional[Iterable[SubPost]] = None):
+    def __init__(self, __iterable: Optional[Iterable[SubPost]] = None, /):
         if __iterable is not None:
             self.clear()
             self.extend(__iterable)
@@ -79,6 +81,9 @@ class SubPosts(List[SubPost]):
 
     def sort(self):
         self = sorted(self, key=lambda x: x.id)
+
+    def users(self):
+        return {subpost.author for subpost in self}
 
     def audios(self):
         return reduce(lambda c1, c2: c2 | c1, [subpost.audios() for subpost in self])
@@ -111,6 +116,78 @@ class SubPosts(List[SubPost]):
         if rest_subposts > 0:
             insert_str += f", ...{rest_subposts}"
         return f"[{insert_str}]"
+
+
+class DictSubPosts:
+    def __init__(
+        self, dict_subposts: Optional[Union[Self, Dict[int, SubPosts]]] = None, /
+    ):
+        self.__dict: Dict[int, SubPosts] = {}
+
+        if isinstance(dict_subposts, self.__class__):
+            self += dict_subposts
+        elif (
+            isinstance(dict_subposts, dict)
+            and all(isinstance(key, int) for key in dict_subposts.keys())
+            and all(isinstance(value, SubPosts) for value in dict_subposts.values())
+        ):
+            self.__dict = deepcopy(dict_subposts)
+        else:
+            raise ValueError(
+                f"Expect {self.__class__.__name__} or Dict[int, SubPosts]."
+            )
+
+    def __dict__(self):
+        return deepcopy(self.__dict)
+
+    def __getitem__(self, key):
+        return self.__dict.__getitem__(key)
+
+    def update_id(self, id: int, subposts: SubPosts):
+        if self.__dict.get(id):
+            self.__dict[id] |= subposts
+        else:
+            self.__dict.setdefault(id, subposts)
+
+    def users(self):
+        return reduce(
+            lambda u1, u2: u1 | u2,
+            [subposts.users() for subposts in self.__dict.values()],
+        )
+
+    def audios(self):
+        return reduce(
+            lambda a1, a2: a1 | a2,
+            [subposts.audios() for subposts in self.__dict.values()],
+        )
+
+    def keys(self):
+        return self.__dict.keys()
+
+    def values(self):
+        return self.__dict.values()
+
+    def items(self):
+        return self.__dict.items()
+
+    def __add__(self, other):
+        if not isinstance(other, self.__class__):
+            raise TypeError(f"Expected instance of {self.__class__}.")
+
+        for pid in other.keys():
+            self.update_id(pid, other[pid])
+        return self
+
+    def __radd__(self, other):
+        return self.__add__(other)
+
+    def __or__(self, other):
+        return self.__add__(other)
+
+    def __eq__(self, other):
+        return (
+            self.__dict == other.__dict if isinstance(other, self.__class__) else False
+        )
 
 
 class Post:
@@ -205,7 +282,7 @@ class Post:
 
 
 class Posts(List[Post]):
-    def __init__(self, /, __iterable: Optional[Iterable[Post]] = None):
+    def __init__(self, __iterable: Optional[Iterable[Post]] = None, /):
         if __iterable is not None:
             self.clear()
             self.extend(__iterable)
@@ -222,6 +299,9 @@ class Posts(List[Post]):
 
     def sort(self):
         self = sorted(self, key=lambda x: x.id)
+
+    def users(self):
+        return {post.author for post in self}
 
     def images(self):
         return reduce(lambda c1, c2: c2 | c1, [post.images() for post in self])
