@@ -132,13 +132,10 @@ class DictSubPosts:
             and all(isinstance(value, SubPosts) for value in dict_subposts.values())
         ):
             self.__dict = deepcopy(dict_subposts)
-        else:
+        elif dict_subposts is not None:
             raise ValueError(
                 f"Expect {self.__class__.__name__} or Dict[int, SubPosts]."
             )
-
-    def __dict__(self):
-        return deepcopy(self.__dict)
 
     def __getitem__(self, key):
         return self.__dict.__getitem__(key)

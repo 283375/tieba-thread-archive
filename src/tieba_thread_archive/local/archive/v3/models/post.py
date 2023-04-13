@@ -72,14 +72,12 @@ class AV3DictSubPosts:
 
     @staticmethod
     def archive_load(archive: ArchivePart, user_list: Iterable[User]):
-        dict_subposts = DictSubPosts()
-
-        for pid, subposts_archive in archive.items():
-            dict_subposts.update_id(
-                pid, AV3SubPosts.archive_load(subposts_archive, user_list)
-            )
-
-        return dict_subposts
+        return DictSubPosts(
+            {
+                pid: AV3SubPosts.archive_load(subposts_archive, user_list)
+                for pid, subposts_archive in archive.items()
+            }
+        )
 
 
 class AV3Post:

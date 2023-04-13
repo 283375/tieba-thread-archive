@@ -94,10 +94,8 @@ class ArchiveThread:
             assert isinstance(value, ArchiveOptions)
         elif name == "posts":
             assert isinstance(value, Posts)
-        elif name == "subposts":
-            assert isinstance(value, DictSubPosts) and all(
-                isinstance(v, SubPosts) for v in value.values()
-            )
+        elif name == "dict_subposts":
+            assert isinstance(value, DictSubPosts)
         elif name == "users":
             assert all(isinstance(v, User) for v in value)
         elif name == "images":
