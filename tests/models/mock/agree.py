@@ -2,9 +2,17 @@ import random
 
 from src.tieba_thread_archive.models.agree import Agree
 
+__all__ = ("MockAgree",)
 
-class MockAgree(Agree):
+
+class MockAgree:
     def __init__(self):
-        super().__init__(
-            agree_num=random.randint(0, 100), disagree_num=random.randint(0, 100)
-        )
+        raise NotImplementedError()
+
+    @staticmethod
+    def mock(
+        *,
+        agree_num: int = random.randint(0, 100),
+        disagree_num: int = random.randint(0, 100),
+    ):
+        return Agree(agree_num=agree_num, disagree_num=disagree_num)

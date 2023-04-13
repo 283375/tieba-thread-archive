@@ -1,117 +1,207 @@
 import random
 import secrets
-from typing import Dict, Optional, Tuple, TypedDict
+from typing import Dict, Iterable, Union, overload
 
-from src.tieba_thread_archive.models.post import Post, Posts, SubPost, SubPosts
-from src.tieba_thread_archive.models.user import User
+from src.tieba_thread_archive.models import (
+    Agree,
+    Contents,
+    DictSubPosts,
+    Post,
+    Posts,
+    SubPost,
+    SubPosts,
+    User,
+)
 
 from .agree import MockAgree
 from .common import mock_timestamp, mock_timestamp_later_than
 from .content import MockContents
 from .user import MockUser
 
+__all__ = (
+    "mock_post_id",
+    "MockSubPost",
+    "MockSubPosts",
+    "MockPost",
+    "MockPosts",
+    "MockDictSubPosts",
+)
+
 
 def mock_post_id():
     return random.randint(120000000000, 150000000000)
 
 
-class MockSubPost(SubPost):
-    def __init__(self, *, spid: int, timestamp: int):
-        super().__init__(
-            id=spid,
-            agree=MockAgree(),
-            author=MockUser(),
-            time=timestamp or mock_timestamp(),
-            contents=MockContents(),
+class MockSubPost:
+    @staticmethod
+    def mock(
+        *,
+        id: int = mock_post_id(),
+        agree: Agree = MockAgree.mock(),
+        author: User = MockUser.mock(),
+        time: int = mock_timestamp(),
+        contents: Contents = MockContents.mock(subpost_contents=True),
+    ):
+        return SubPost(
+            id=id,
+            agree=agree,
+            author=author,
+            time=time,
+            contents=contents,
         )
 
 
-class MockSubPosts(SubPosts):
-    def __init__(
-        self,
+class MockSubPosts:
+    @overload
+    @staticmethod
+    def mock(__iterable: Iterable[SubPost], /) -> SubPosts:
+        ...
+
+    @overload
+    @staticmethod
+    def mock(
+        *,
         start_spid: int = mock_post_id(),
         start_timestamp: int = mock_timestamp(),
         subpost_num: int = random.randint(1, 10),
-    ):
-        spid = start_spid
-        timestamp = start_timestamp
-        mock_subpost_number = subpost_num
+    ) -> SubPosts:
+        ...
+
+    @staticmethod
+    def mock(*args, **kwargs):
+        if (
+            len(args) == 1
+            and args[0]
+            and isinstance(args[0], Iterable)
+            and all(isinstance(item, SubPost) for item in args[0])
+        ):
+            return SubPosts(args[0])
+
+        spid = kwargs.get("spid", mock_post_id())
+        timestamp = kwargs.get("start_timestamp", mock_timestamp())
+        mock_subpost_number = kwargs.get("subpost_num", random.randint(1, 10))
 
         mock_subposts = []
         for _ in range(mock_subpost_number):
-            mock_subposts.append(MockSubPost(spid=spid, timestamp=timestamp))
+            mock_subposts.append(MockSubPost.mock(id=spid, time=timestamp))
             spid += random.randint(100, 200)
             timestamp = mock_timestamp_later_than(timestamp)
 
-        super().__init__(mock_subposts)
+        return SubPosts(mock_subposts)
 
 
-class MockPost(Post):
-    def __init__(
-        self,
+class MockPost:
+    @staticmethod
+    def mock(
         *,
-        pid: int,
-        floor: int,
-        timestamp: int,
-        author: Optional[User] = None,
-        subpost_num: int,
+        floor: int = random.randint(1, 50),
+        id: int = mock_post_id(),
+        title: str = secrets.token_urlsafe(10),
+        agree: Agree = MockAgree.mock(),
+        author: User = MockUser.mock(),
+        time: int = mock_timestamp(),
+        subpost_num: int = random.randint(1, 10),
+        contents: Contents = MockContents.mock(),
     ):
-        super().__init__(
+        return Post(
             floor=floor,
-            id=pid,
-            title=secrets.token_urlsafe(10),
-            agree=MockAgree(),
-            author=author or MockUser(),
-            time=timestamp,
+            id=id,
+            title=title,
+            agree=agree,
+            author=author,
+            time=time,
             subpost_num=subpost_num,
-            contents=MockContents(),
+            contents=contents,
         )
 
 
-class MockPosts(Posts):
-    __slots__ = ("post_subpost_num",)
+class MockPosts:
+    @overload
+    @staticmethod
+    def mock(__iterable: Iterable[Post], /) -> Posts:
+        ...
 
-    def __init__(
-        self,
+    @overload
+    @staticmethod
+    def mock(
+        *,
         start_pid: int = mock_post_id(),
         start_timestamp: int = mock_timestamp(),
-        lz: User = MockUser(),
+        author: User = MockUser.mock(),
         post_num: int = random.randint(3, 25),
-    ):
-        timestamp = start_timestamp
-        pid = start_pid
+    ) -> Posts:
+        ...
 
-        self.post_subpost_num = {}
+    @staticmethod
+    def mock(*args, **kwargs):
+        if (
+            len(args) == 1
+            and args[0]
+            and isinstance(args[0], Iterable)
+            and all(isinstance(item, Post) for item in args[0])
+        ):
+            return Posts(args[0])
+
+        pid = kwargs.get("start_pid", mock_post_id())
+        timestamp = kwargs.get(" start_timestamp", mock_timestamp())
+        author = kwargs.get("author", MockUser.mock())
+        post_num = kwargs.get("post_num", random.randint(3, 25))
 
         mock_posts = []
         for i in range(post_num):
             floor = i + 1
             subpost_num = random.randint(0, 5)
-            self.post_subpost_num.setdefault(pid, subpost_num)
             mock_posts.append(
-                MockPost(
-                    pid=pid,
+                MockPost.mock(
+                    id=pid,
                     floor=floor,
-                    timestamp=timestamp,
-                    author=random.choices([lz, MockUser()], weights=(20, 80))[0],
+                    time=timestamp,
+                    author=author if random.random() < 0.2 else MockUser.mock(),
                     subpost_num=subpost_num,
                 )
             )
             timestamp = mock_timestamp_later_than(timestamp)
             pid += random.randint(20, 50)
 
-        super().__init__(mock_posts)
+        return Posts(mock_posts)
 
 
-def mock_posts_and_subposts(lz: User = MockUser()) -> Tuple[Posts, Dict[int, SubPosts]]:
-    posts = MockPosts(lz=lz)
-    subposts: Dict[int, SubPosts] = {
-        post.id: MockSubPosts(
-            start_spid=post.id + random.randint(100, 200),
-            start_timestamp=mock_timestamp_later_than(post.time),
-            subpost_num=post.subpost_num,
+class MockDictSubPosts:
+    @overload
+    @staticmethod
+    def mock(
+        dict_subposts: Union[DictSubPosts, Dict[int, SubPosts]], /
+    ) -> DictSubPosts:
+        ...
+
+    @overload
+    @staticmethod
+    def mock(posts: Posts, /) -> DictSubPosts:
+        ...
+
+    @staticmethod
+    def mock(pos_arg, /):
+        if isinstance(pos_arg, (dict, DictSubPosts)):
+            return DictSubPosts(pos_arg)  # type: ignore , DictSubPosts would do type check
+        elif isinstance(pos_arg, Posts):
+            return DictSubPosts(
+                {
+                    post.id: MockSubPosts.mock(
+                        start_spid=post.id + random.randint(100, 200),
+                        start_timestamp=mock_timestamp_later_than(post.time),
+                        subpost_num=post.subpost_num,
+                    )
+                    for post in pos_arg
+                    if post.subpost_num > 0
+                }
+            )
+
+    @staticmethod
+    def slice(dict_subposts: DictSubPosts, posts: Posts):
+        return DictSubPosts(
+            {
+                pid: subposts
+                for pid, subposts in dict_subposts.items()
+                if pid in [post.id for post in posts]
+            }
         )
-        for post in posts
-        if post.subpost_num > 0
-    }
-    return (posts, subposts)
