@@ -3,6 +3,8 @@ black==23.1.0
 pre-commit==3.2.0
 tox==4.4.11
 pytest==7.2.2
+pytest-order==1.1.0
+pytest-repeat==0.9.1
 
 setuptools==63.2.0
 build==0.10.0

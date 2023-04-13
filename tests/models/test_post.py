@@ -5,7 +5,7 @@ from src.tieba_thread_archive.remote.protobuf.response.PbPageResIdl_pb2 import (
 )
 from tests.models.mock.post import MockPosts
 
-mock_posts = MockPosts(post_num=3)
+mock_posts = MockPosts.mock(post_num=3)
 
 
 class Test_Post_Posts:
