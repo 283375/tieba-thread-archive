@@ -1,5 +1,3 @@
-from typing import TypedDict
-
 from ..remote.protobuf.common import User_pb2
 
 __all__ = ("User",)

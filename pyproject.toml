@@ -38,7 +38,8 @@ src_paths = ["src", "tests"]
 extend_skip = ["src/tieba_thread_archive/remote/protobuf"]
 
 [tool.pyright]
-ignore = ["src/tieba_thread_archive/remote/protobuf"]
+ignore = ["src/tieba_thread_archive/remote/protobuf", "**/__debug*.py"]
+reportUnusedImport = true
 
 [tool.pytest.ini_options]
 pythonpath = "."

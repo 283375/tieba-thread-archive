@@ -1,6 +1,5 @@
 import random
 
-from ....utils.cuid import generate_cuid
 from .constants import APP_MAIN_VERSION
 
 WEB_USER_AGENTS = [

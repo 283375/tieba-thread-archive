@@ -1,8 +1,8 @@
-from typing import Any, Dict, Optional, Set
+from typing import Any, Optional, Set
 
 from ..remote.protobuf.response.PbPageResIdl_pb2 import PbPageResIdl
 from .content import ContentAudio, ContentImage, ContentVideo
-from .post import DictSubPosts, Posts, SubPosts
+from .post import DictSubPosts, Posts
 from .user import User
 
 __all__ = ("ThreadInfo", "ArchiveOptions", "ArchiveUpdateInfo", "ArchiveThread")
