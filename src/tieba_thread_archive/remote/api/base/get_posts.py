@@ -59,4 +59,4 @@ call = mobile_protobuf_call(get_request)
 
 def parse_response(response: requests.Response) -> Posts:
     res_pb = PbPageResIdl_pb2.PbPageResIdl.FromString(response.content)
-    return Posts.from_protobuf(res_pb.data.post_list)
+    return Posts.from_protobuf(res_pb.data.post_list, res_pb.data.user_list)
