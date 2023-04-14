@@ -18,12 +18,8 @@ class Test_Post_Posts:
         assert posts[0].title == "整了个烂活"
 
     def test_posts_functionality(self):
-        post_1 = mock_posts[0]
-        post_2 = mock_posts[1]
-        post_3 = mock_posts[2]
-
-        posts_1 = Posts([post_1, post_2])
-        posts_2 = Posts([post_2, post_3])
+        posts_1 = mock_posts.slice(1, 2)
+        posts_2 = mock_posts.slice(2, 3)
 
         full_posts = posts_1 + posts_2
 

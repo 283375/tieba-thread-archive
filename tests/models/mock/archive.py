@@ -2,7 +2,7 @@ import random
 import secrets
 from typing import Tuple, overload
 
-from src.tieba_thread_archive.models import ArchiveThread, Posts, ThreadInfo, User
+from src.tieba_thread_archive.models import ArchiveThread, ThreadInfo, User
 
 from .post import MockDictSubPosts, MockPosts
 from .user import MockUser
@@ -55,16 +55,8 @@ class MockArchiveThread(ArchiveThread):
         archive_thread: ArchiveThread, start_floor: int, end_floor: int
     ) -> ArchiveThread:
         orig_archive_thread = archive_thread
-        start_floor = max(1, start_floor)
-        end_floor = min(len(orig_archive_thread.posts), end_floor)
-        assert start_floor <= end_floor
-        sliced_posts = Posts(
-            [
-                post
-                for post in orig_archive_thread.posts
-                if start_floor <= post.floor <= end_floor
-            ]
-        )
+
+        sliced_posts = orig_archive_thread.posts.slice(start_floor, end_floor)
         sliced_dict_subposts = MockDictSubPosts.slice(
             orig_archive_thread.dict_subposts, sliced_posts
         )

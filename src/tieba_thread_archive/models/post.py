@@ -283,7 +283,7 @@ class Posts(List[Post]):
         if __iterable is not None:
             self.clear()
             self.extend(__iterable)
-            self.sort()
+            self.sort_self()
 
     @classmethod
     def from_protobuf(
@@ -294,8 +294,31 @@ class Posts(List[Post]):
         posts = [Post.from_protobuf(_pb, user_list) for _pb in pb]
         return cls(posts)
 
-    def sort(self):
-        self = sorted(self, key=lambda x: x.id)
+    def __sort(self, posts: Iterable[Post]):
+        return sorted(posts, key=lambda x: x.id)
+
+    def sort(self) -> Self:
+        return Posts(self.__sort(self))
+
+    def sort_self(self):
+        sorted_posts = self.__sort(self)
+        self.clear()
+        self.extend(sorted_posts)
+
+    def __slice(self, posts: Iterable[Post], start_floor: int, end_floor: int):
+        if start_floor > end_floor:
+            raise ValueError("start_floor must be less than or equal to end_floor")
+        start_floor = max(1, start_floor)
+        end_floor = min(len(self), end_floor)
+        return [post for post in self if start_floor <= post.floor <= end_floor]
+
+    def slice(self, start_floor: int, end_floor: int) -> Self:
+        return Posts(self.__slice(self, start_floor, end_floor))
+
+    def slice_self(self, start_floor: int, end_floor: int):
+        sliced_posts = self.__slice(self, start_floor, end_floor)
+        self.clear()
+        self.extend(sliced_posts)
 
     def users(self):
         return {post.author for post in self}
