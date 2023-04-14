@@ -28,7 +28,7 @@ class RemoteThread:
         "add_complete_hook",
         "info",
         "posts",
-        "subposts",
+        "dict_subposts",
     )
 
     def __init__(self, tid: int):
