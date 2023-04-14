@@ -4,6 +4,7 @@ from typing import Tuple, overload
 
 from src.tieba_thread_archive.models import ArchiveThread, ThreadInfo, User
 
+from .forum import MockForum
 from .post import MockDictSubPosts, MockPosts
 from .user import MockUser
 
@@ -41,6 +42,7 @@ class MockArchiveThread(ArchiveThread):
                     id=random.randint(7000000000, 8000000000),
                     title=f"__TEST_ONLY_{secrets.token_hex(8)}__",
                     author=author,
+                    forum=MockForum.mock(),
                     create_time=posts[0].time,
                 ),
                 posts=posts,

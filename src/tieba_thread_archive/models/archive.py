@@ -2,6 +2,7 @@ from typing import Any, Optional, Set
 
 from ..remote.protobuf.response.PbPageResIdl_pb2 import PbPageResIdl
 from .content import ContentAudio, ContentImage, ContentVideo
+from .forum import Forum
 from .post import DictSubPosts, Posts
 from .user import User
 
@@ -9,12 +10,15 @@ __all__ = ("ThreadInfo", "ArchiveOptions", "ArchiveUpdateInfo", "ArchiveThread")
 
 
 class ThreadInfo:
-    __slots__ = ("id", "title", "author", "create_time")
+    __slots__ = ("id", "title", "author", "forum", "create_time")
 
-    def __init__(self, *, id: int, title: str, author: User, create_time: int):
+    def __init__(
+        self, *, id: int, title: str, author: User, forum: Forum, create_time: int
+    ):
         self.id = id
         self.title = title
         self.author = author
+        self.forum = forum
         self.create_time = create_time
 
     @classmethod
@@ -23,6 +27,7 @@ class ThreadInfo:
             id=pb.data.thread.id,
             title=pb.data.thread.title,
             author=User.from_protobuf(pb.data.thread.author),
+            forum=Forum.from_protobuf(pb.data.forum),
             create_time=pb.data.thread.create_time,
         )
 

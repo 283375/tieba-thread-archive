@@ -1,6 +1,7 @@
 from typing import List, TypedDict, Union
 
 from .....models import *
+from .forum import AV3Forum
 from .post import AV3DictSubPosts, AV3Posts
 from .user import AV3User
 
@@ -17,6 +18,7 @@ class AV3ThreadInfo:
         id: int
         title: str
         author: AV3User.ArchivePart
+        forum: AV3Forum.ArchivePart
         create_time: int
 
     @staticmethod
@@ -25,6 +27,7 @@ class AV3ThreadInfo:
             "id": thread_info.id,
             "title": thread_info.title,
             "author": AV3User.archive_dump(thread_info.author),
+            "forum": AV3Forum.archive_dump(thread_info.forum),
             "create_time": thread_info.create_time,
         }
 
@@ -34,6 +37,7 @@ class AV3ThreadInfo:
             id=archive["id"],
             title=archive["title"],
             author=AV3User.archive_load(archive["author"]),
+            forum=AV3Forum.archive_load(archive["forum"]),
             create_time=archive["create_time"],
         )
 
