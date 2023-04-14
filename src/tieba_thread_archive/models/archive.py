@@ -34,6 +34,16 @@ class ThreadInfo:
     def __repr__(self):
         return f"ThreadInfo({self.id}:{self.title}@{self.author.name})"
 
+    def __eq__(self, other):
+        return (
+            self.id == other.id
+            and self.author.id == other.author.id
+            and self.forum.id == other.forum.id
+            and self.create_time == other.create_time
+            if isinstance(other, self.__class__)
+            else False
+        )
+
 
 class ArchiveOptions:
     __slots__ = ("images", "audios", "videos", "portraits")
@@ -145,7 +155,8 @@ class ArchiveThread:
     def __eq__(self, other):
         return (
             (
-                self.posts == other.posts
+                self.thread_info == other.thread_info
+                and self.posts == other.posts
                 and self.dict_subposts == other.dict_subposts
                 and self.users == other.users
             )
