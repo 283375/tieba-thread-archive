@@ -4,7 +4,12 @@ from google.protobuf.message import Message
 
 from .sign import sign_url_params
 
-__all__ = ("pack_mobile_protobuf_data", "pack_mobile_url_encoded_data")
+__all__ = ("pack_web_data", "pack_mobile_protobuf_data", "pack_mobile_url_encoded_data")
+
+
+def pack_web_data(data: Dict[str, Any]) -> Dict[str, Any]:
+    """有什么打包的必要吗？"""
+    return data
 
 
 def pack_mobile_protobuf_data(data: Union[bytes, Message]) -> List[Tuple[str, Any]]:

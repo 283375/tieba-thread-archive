@@ -5,8 +5,9 @@ from typing import Iterable, List
 
 import requests
 
-from ...models.post import Posts
-from .base import get_posts
+from .base import get_posts as base_get_posts
+
+__all__ = ("get_requests", "call", "parse_responses")
 
 
 def get_requests(
@@ -20,16 +21,16 @@ def get_requests(
     comment_rn: int = 1,
     is_fold: bool = False,
 ) -> List[requests.Request]:
-    preload = get_posts.RESPONSE_PROTOBUF.FromString(
-        get_posts.call(tid, pn=1, rn=2).content
+    preload = base_get_posts.RESPONSE_PROTOBUF.FromString(
+        base_get_posts.call(tid, pn=1, rn=2).content
     )
     data = preload.data
     post_num = data.page.page_size * data.page.total_page
     page_size = 30
-    pages = range(1, ceil(post_num / page_size) + 1)
+    pages = range(1, max(2, ceil(post_num / page_size) + 1))
 
     return [
-        get_posts.get_request(
+        base_get_posts.get_request(
             tid,
             pn=page,
             rn=page_size,
@@ -79,11 +80,5 @@ def call(
 
 
 def parse_responses(responses: Iterable[requests.Response]):
-    posts = [
-        Posts.from_protobuf(
-            get_posts.RESPONSE_PROTOBUF.FromString(response.content).data.post_list,
-            get_posts.RESPONSE_PROTOBUF.FromString(response.content).data.user_list,
-        )
-        for response in responses
-    ]
+    posts = [base_get_posts.parse_response(response) for response in responses]
     return reduce(lambda p1, p2: p1 + p2, posts)

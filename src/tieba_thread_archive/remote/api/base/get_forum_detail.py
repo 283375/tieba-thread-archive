@@ -5,14 +5,15 @@ import requests
 from yarl import URL
 
 from ....models.forum import Forum
-from ..helpers.constants import URL_BASE_HOST
+from ..exception import TiebaApiError
+from ..helpers.constants import APP_BASE_HOST
 from ..helpers.quick_api import mobile_url_encoded_call, mobile_url_encoded_request
 
 
 def url():
     return URL.build(
         scheme="http",
-        host=URL_BASE_HOST,
+        host=APP_BASE_HOST,
         path="/c/f/forum/getforumdetail",
     )
 
@@ -30,6 +31,12 @@ call = mobile_url_encoded_call(get_request)
 def parse_response(response: requests.Response) -> Forum:
     content_dict = json.loads(response.text)
     assert isinstance(content_dict, dict)
+
+    error_code = content_dict.get("error_code")
+    assert isinstance(error_code, (int, str))
+    if int(error_code) != 0:
+        raise TiebaApiError(int(error_code), content_dict.get("error_msg", ""))
+
     forum_info = content_dict.get("forum_info")
     assert isinstance(forum_info, dict)
     fid = forum_info.get("forum_id")

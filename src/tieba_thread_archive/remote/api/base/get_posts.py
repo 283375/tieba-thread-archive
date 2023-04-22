@@ -4,7 +4,8 @@ from yarl import URL
 from ....models.post import Posts
 from ...protobuf.request import PbPageReqIdl_pb2
 from ...protobuf.response import PbPageResIdl_pb2
-from ..helpers.constants import APP_MAIN_VERSION, URL_BASE_HOST
+from ..exception import TiebaApiError
+from ..helpers.constants import APP_BASE_HOST, APP_MAIN_VERSION
 from ..helpers.quick_api import mobile_protobuf_call, mobile_protobuf_request
 
 CMD = 302001
@@ -14,7 +15,7 @@ RESPONSE_PROTOBUF = PbPageResIdl_pb2.PbPageResIdl
 def url():
     return URL.build(
         scheme="https",
-        host=URL_BASE_HOST,
+        host=APP_BASE_HOST,
         path="/c/f/pb/page",
         query_string=f"cmd={CMD}",
     )
@@ -58,5 +59,7 @@ call = mobile_protobuf_call(get_request)
 
 
 def parse_response(response: requests.Response) -> Posts:
-    res_pb = PbPageResIdl_pb2.PbPageResIdl.FromString(response.content)
-    return Posts.from_protobuf(res_pb.data.post_list, res_pb.data.user_list)
+    pb = PbPageResIdl_pb2.PbPageResIdl.FromString(response.content)
+    if pb.error.errorno != 0:
+        raise TiebaApiError(pb.error.errorno, pb.error.errmsg)
+    return Posts.from_protobuf(pb.data.post_list, pb.data.user_list)

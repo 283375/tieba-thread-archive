@@ -4,12 +4,44 @@ import requests
 from google.protobuf.message import Message
 from typing_extensions import ParamSpec
 
-from .headers import mobile_headers, mobile_protobuf_headers, mobile_url_encoded_headers
+from .headers import *
 from .pack import *
 
 P = ParamSpec("P")
 
 THeaders = Dict[str, str]
+
+
+# region web
+
+
+def web_request(
+    method: str, url: str, params: Callable[P, Dict[str, Any]], headers: THeaders = {}
+):
+    def wrapper(*args: P.args, **kwargs: P.kwargs):
+        return requests.Request(
+            method=method,
+            url=url,
+            headers={
+                **web_headers(),
+                **(headers or {}),
+            },
+            params=pack_web_data(params(*args, **kwargs)),
+        )
+
+    return wrapper
+
+
+def web_call(
+    params_request: Callable[P, requests.Request]
+) -> Callable[P, requests.Response]:
+    def wrapper(*args: P.args, **kwargs: P.kwargs):
+        return requests.Session().send(params_request(*args, **kwargs).prepare())
+
+    return wrapper
+
+
+# endregion
 
 
 # region mobile_protobuf

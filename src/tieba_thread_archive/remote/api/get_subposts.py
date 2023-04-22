@@ -5,8 +5,9 @@ from typing import Iterable, List
 
 import requests
 
-from ...models.post import SubPosts
 from .base import get_comments
+
+__all__ = ("get_requests", "call", "parse_responses")
 
 
 def get_requests(
@@ -45,12 +46,5 @@ def call(tid: int, pid: int, /, *, is_floor: bool = False):
 
 
 def parse_responses(responses: Iterable[requests.Response]):
-    subposts = [
-        SubPosts.from_protobuf(
-            get_comments.RESPONSE_PROTOBUF.FromString(
-                response.content
-            ).data.subpost_list
-        )
-        for response in responses
-    ]
+    subposts = [get_comments.parse_response(response) for response in responses]
     return reduce(lambda s1, s2: s1 + s2, subposts)
