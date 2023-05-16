@@ -137,8 +137,9 @@ class AV3LocalArchive(LocalArchive):
             if filepath.name in existing_files:
                 continue
 
+            dump_content = av3_dump_thread_yaml_str(archive_thread=history)
             with open(filepath, "w", encoding="utf-8") as history_ws:
-                history_ws.write(av3_dump_thread_yaml_str(archive_thread=history))
+                history_ws.write(dump_content)
 
     def __load_info(self):
         with open(self.info_file, "r", encoding="utf-8") as info_rs:
@@ -154,14 +155,13 @@ class AV3LocalArchive(LocalArchive):
             raise ValueError("archive_options not set.")
 
         if self._archive_thread and self._archive_update_info:
+            dump_content = av3_dump_info_yaml_str(
+                thread_info=self._archive_thread.thread_info,
+                archive_options=self._archive_options,
+                archive_update_info=self._archive_update_info,
+            )
             with open(self.info_file, "w", encoding="utf-8") as info_ws:
-                info_ws.write(
-                    av3_dump_info_yaml_str(
-                        thread_info=self._archive_thread.thread_info,
-                        archive_options=self._archive_options,
-                        archive_update_info=self._archive_update_info,
-                    )
-                )
+                info_ws.write(dump_content)
         else:
             raise ValueError(
                 "Missing required values, probably archive not loaded properly."
@@ -182,10 +182,9 @@ class AV3LocalArchive(LocalArchive):
 
     def __dump_archive_thread(self):
         if self._archive_thread:
+            dump_content = av3_dump_thread_yaml_str(archive_thread=self._archive_thread)
             with open(self.path / "thread.yaml", "w", encoding="utf-8") as thread_ws:
-                thread_ws.write(
-                    av3_dump_thread_yaml_str(archive_thread=self._archive_thread)
-                )
+                thread_ws.write(dump_content)
         else:
             raise ValueError(
                 "Missing required values, probably archive not loaded properly."
@@ -201,11 +200,10 @@ class AV3LocalArchive(LocalArchive):
 
     def __dump_assets(self):
         with open(self.assets_file, "w", encoding="utf-8") as assets_ws:
-            assets_ws.write(
-                av3_dump_assets_yaml_str(
-                    images=self._images, audios=self._audios, videos=self._videos
-                )
+            dump_content = av3_dump_assets_yaml_str(
+                images=self._images, audios=self._audios, videos=self._videos
             )
+            assets_ws.write(dump_content)
 
     def load(self):
         self.__load_info()
