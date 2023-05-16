@@ -63,6 +63,8 @@ class AV3LocalArchive(LocalArchive):
         self._update_progress = Progress()
 
         self._path = Path(path)
+        self._loaded = False
+        self._history_loaded = False
 
         if not self._path.exists():
             raise ValueError(f"Passing in an invalid path {self._path}.")
