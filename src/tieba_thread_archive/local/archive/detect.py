@@ -36,6 +36,7 @@ __all__ = ("detect_archive_version",)
 
 def detect_archive_version(path: Union[str, PathLike]) -> Union[int, None]:
     path = Path(path)
+    assert path.is_dir()
     subfiles = list(path.iterdir())
     subfile_names = {file.name for file in subfiles}
 
