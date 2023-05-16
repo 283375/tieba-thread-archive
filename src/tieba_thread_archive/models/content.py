@@ -1,4 +1,4 @@
-from typing import Iterable, List, Optional, Tuple
+from typing import Any, Dict, Iterable, List, Optional, Tuple, Type
 
 from google.protobuf.internal.containers import RepeatedCompositeFieldContainer
 from yarl import URL
@@ -17,13 +17,15 @@ __all__ = (
     "ContentPhoneNumber",
     "ContentAudio",
     "ContentTopic",
+    "ContentItem",
+    "ContentUnknown",
     "ContentSegment",
     "Contents",
 )
 
 
 class ContentBase:
-    __slots__ = tuple()
+    __slots__ = ()
     type: int
 
     def __init__(self):
@@ -239,6 +241,37 @@ class ContentTopic(ContentBase):
         return f"ContentTopic({self.text})"
 
 
+class ContentItem(ContentBase):
+    __slots__ = ("text", "item_id")
+    type = 27
+
+    def __init__(self, *, text: str, item_id: int):
+        self.text = text
+        self.item_id = item_id
+
+    @classmethod
+    def from_protobuf(cls, pb):
+        return cls(text=pb.text, item_id=pb.item_id)
+
+    def __hash__(self):
+        return hash(f"__TIEBA_ITEM_{self.item_id}")
+
+    def __repr__(self):
+        return f"ContentItem({self.text}, {self.item_id})"
+
+
+class ContentUnknown(ContentBase):
+    __slots__ = ("type", "dict")
+
+    def __init__(self, dict: Dict[str, Any], /):
+        self.type = dict["type"]
+        self.dict = dict
+
+    @classmethod
+    def from_protobuf(cls, pb):
+        return cls({k.name: v for k, v in pb.ListFields()})
+
+
 class ContentTypeMapping(dict):
     def __init__(self):
         self.update(
@@ -252,14 +285,13 @@ class ContentTypeMapping(dict):
                 9: ContentPhoneNumber,
                 10: ContentAudio,
                 18: ContentTopic,
+                27: ContentItem,
             }
         )
 
-    def get(self, __key: int) -> ContentBase:
-        item = super().get(__key, None)
-        if item is None:
-            raise KeyError(f"Unknown content type {__key}")
-        return item
+    def get(self, __key: int) -> Type[ContentBase]:
+        # raise KeyError(f"Unknown content type {__key}")
+        return super().get(__key, ContentUnknown)
 
     def __getitem__(self, __key: int):
         return self.get(__key)
@@ -272,7 +304,11 @@ class ContentSegment:
     @staticmethod
     def from_protobuf(pb: PbContent_pb2.PbContent):
         content = CONTENT_TYPE_TABLE[pb.type]
-        return content.from_protobuf(pb)
+        content_class = content.from_protobuf(pb)
+        if isinstance(content_class, ContentUnknown):
+            print(f"Unknown content type {content_class.type}")
+            print(content_class.dict)
+        return content_class
 
 
 class Contents(List[ContentBase]):
@@ -285,14 +321,7 @@ class Contents(List[ContentBase]):
     def from_protobuf(
         cls, pb: RepeatedCompositeFieldContainer[PbContent_pb2.PbContent]
     ):
-        self = cls()
-        for content in pb:
-            try:
-                self.append(ContentSegment.from_protobuf(content))
-            except KeyError as e:
-                print(content)
-                print(e)
-        return self
+        return cls(ContentSegment.from_protobuf(content) for content in pb)
 
     def __repr__(self):
         return f"Contents(...{len(self)})"

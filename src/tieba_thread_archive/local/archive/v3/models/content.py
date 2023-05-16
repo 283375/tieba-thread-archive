@@ -1,4 +1,4 @@
-from typing import Any, List, Optional, Tuple, TypedDict
+from typing import Any, Dict, List, Optional, Tuple, TypedDict
 
 from .....models.content import *
 
@@ -13,6 +13,7 @@ __all__ = (
     "AV3ContentPhoneNumber",
     "AV3ContentAudio",
     "AV3ContentTopic",
+    "AV3ContentUnknown",
     "AV3ContentTypeMapping",
     "AV3ContentSegment",
     "AV3Contents",
@@ -184,6 +185,30 @@ class AV3ContentTopic(AV3ContentBase):
         return ContentTopic(text=archive["text"], link=archive["link"])
 
 
+class AV3ContentItem(AV3ContentBase):
+    class ArchivePart(AV3ContentBase.ArchivePart):
+        text: str
+        item_id: int
+
+    @staticmethod
+    def archive_dump(content: ContentItem) -> ArchivePart:
+        return {"type": content.type, "text": content.text, "item_id": content.item_id}
+
+    @staticmethod
+    def archive_load(archive: ArchivePart):
+        return ContentItem(text=archive["text"], item_id=archive["item_id"])
+
+
+class AV3ContentUnknown(AV3ContentBase):
+    @staticmethod
+    def archive_dump(content: ContentUnknown) -> Dict[str, Any]:
+        return content.dict
+
+    @staticmethod
+    def archive_load(archive: Dict[str, Any]):
+        return ContentUnknown(archive)
+
+
 class AV3ContentTypeMapping(dict):
     def __init__(self):
         self.update(
@@ -197,14 +222,12 @@ class AV3ContentTypeMapping(dict):
                 9: AV3ContentPhoneNumber,
                 10: AV3ContentAudio,
                 18: AV3ContentTopic,
+                27: AV3ContentItem,
             }
         )
 
     def get(self, __key: Any) -> AV3ContentBase:
-        item = super().get(__key, None)
-        if item is None:
-            raise KeyError(f"Unknown content type {__key}.")
-        return item
+        return super().get(__key, AV3ContentUnknown)
 
     def __getitem__(self, __key: int):
         return self.get(__key)
