@@ -17,6 +17,16 @@ from .validate import *
 __all__ = ("AV2LocalArchive",)
 
 
+def v2_absense(func: Callable):
+    @wraps(func)
+    def _(self, *args, **kwargs):
+        raise NotImplementedError(
+            f"{func.__name__} is not supported in archive version 2"
+        )
+
+    return _
+
+
 class AV2LocalArchive(LocalArchive):
     __slots__ = ("__users",)
 
@@ -57,16 +67,6 @@ class AV2LocalArchive(LocalArchive):
     @property
     def assets_file(self):
         return self.path / "assets.json"
-
-    @staticmethod
-    def v2_absense(func: Callable):
-        @wraps(func)
-        def _(self, *args, **kwargs):
-            raise NotImplementedError(
-                f"{func.__name__} is not supported in archive version 2"
-            )
-
-        return _
 
     def __init__(
         self,

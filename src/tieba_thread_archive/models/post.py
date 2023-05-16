@@ -90,9 +90,8 @@ class SubPosts(List[SubPost]):
 
     def __add__(self, other):
         if isinstance(other, self.__class__):
-            subposts = {subpost.id: subpost for subpost in self} | {
-                subpost.id: subpost for subpost in other
-            }
+            subposts = {subpost.id: subpost for subpost in self}
+            subposts.update({subpost.id: subpost for subpost in other})
             subposts = [v for i, v in sorted(subposts.items(), key=lambda kv: kv[0])]
             self.clear()
             self.extend(subposts)
@@ -343,7 +342,8 @@ class Posts(List[Post]):
 
     def __add__(self, other):
         if isinstance(other, self.__class__):
-            posts = {post.id: post for post in self} | {post.id: post for post in other}
+            posts = {post.id: post for post in self}
+            posts.update({post.id: post for post in other})
             posts = [v for i, v in sorted(posts.items(), key=lambda kv: kv[0])]
             self.clear()
             self.extend(posts)
