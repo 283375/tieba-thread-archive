@@ -1,6 +1,0 @@
-{
-  "editor.tabSize": 4,
-  "python.analysis.typeCheckingMode": "basic",
-  "python.testing.unittestEnabled": false,
-  "python.testing.pytestEnabled": true
-}
