@@ -139,12 +139,7 @@ class ArchiveThread:
         return self.posts.images()
 
     def audios(self):
-        audios = self.posts.audios()
-
-        for _subposts in self.dict_subposts.values():
-            audios = _subposts.audios() | audios
-
-        return audios
+        return self.dict_subposts.audios() | self.posts.audios()
 
     def videos(self):
         return self.posts.videos()
