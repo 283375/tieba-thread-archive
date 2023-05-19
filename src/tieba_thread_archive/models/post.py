@@ -1,6 +1,6 @@
 from copy import deepcopy
 from functools import reduce
-from typing import Dict, Iterable, List, Optional, Union
+from typing import Dict, Iterable, List, Optional, Set, Union
 
 from google.protobuf.internal.containers import RepeatedCompositeFieldContainer
 from typing_extensions import Self
@@ -145,17 +145,13 @@ class DictSubPosts:
         else:
             self.__dict.setdefault(id, subposts)
 
-    def users(self):
-        return reduce(
-            lambda u1, u2: u1 | u2,
-            [subposts.users() for subposts in self.__dict.values()],
-        )
+    def users(self) -> Set[User]:
+        user_list = [subposts.users() for subposts in self.__dict.values()]
+        return reduce(lambda u1, u2: u1 | u2, user_list) if user_list else set()
 
     def audios(self):
-        return reduce(
-            lambda a1, a2: a1 | a2,
-            [subposts.audios() for subposts in self.__dict.values()],
-        )
+        audio_list = [subposts.audios() for subposts in self.__dict.values()]
+        return reduce(lambda a1, a2: a1 | a2, audio_list) if audio_list else set()
 
     def keys(self):
         return self.__dict.keys()
