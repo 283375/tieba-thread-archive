@@ -45,6 +45,17 @@ class Progress:
         self.progress -= value
         return self
 
+    def __float__(self):
+        step_weight = 1 / self.total_step if self.total_step > 0 else 0
+        completed_step_precent = (
+            (self.step - 1) / self.total_step if self.total_step > 0 else 0
+        )
+        progress_percent = (
+            self.progress / self.total_progress if self.total_progress > 0 else 0
+        )
+
+        return float(progress_percent * step_weight + completed_step_precent)
+
     def clear_step(self):
         self.__step = 1
         self.__total_step = 1
