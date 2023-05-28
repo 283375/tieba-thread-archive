@@ -23,6 +23,7 @@ def load_archive(
     path: Union[str, PathLike],
     *,
     auto_load: bool = True,
+    auto_load_info: bool = True,
     auto_load_history: bool = False,
 ) -> LocalArchive:
     path = Path(path)
@@ -36,7 +37,12 @@ def load_archive(
     if cls is None:
         raise ValueError("Version not supported.")
 
-    return cls(path, auto_load=auto_load, auto_load_history=auto_load_history)
+    return cls(
+        path,
+        auto_load=auto_load,
+        auto_load_info=auto_load_info,
+        auto_load_history=auto_load_history,
+    )
 
 
 def load_archive_thread_info_only(path: Union[str, PathLike]) -> ThreadInfo:

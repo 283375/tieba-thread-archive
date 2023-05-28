@@ -58,6 +58,7 @@ class AV3LocalArchive(LocalArchive):
         path: Union[str, PathLike],
         *,
         auto_load: bool = True,
+        auto_load_info: bool = True,
         auto_load_history: bool = False,
     ):
         self._update_progress = Progress()
@@ -88,6 +89,8 @@ class AV3LocalArchive(LocalArchive):
         if av3_validate_path(self._path):
             if auto_load:
                 self.load()
+            if not self._loaded and auto_load_info:
+                self.load_info()
             if auto_load_history:
                 self.load_history()
 
@@ -141,12 +144,13 @@ class AV3LocalArchive(LocalArchive):
             with open(filepath, "w", encoding="utf-8") as history_ws:
                 history_ws.write(dump_content)
 
-    def __load_info(self):
+    def load_info(self):
         with open(self.info_file, "r", encoding="utf-8") as info_rs:
-            _, archive_options, archive_update_info = av3_load_info_yaml(
+            _thread_info, archive_options, archive_update_info = av3_load_info_yaml(
                 yaml.safe_load(info_rs.read())
             )
 
+            self._thread_info = _thread_info
             self._archive_options = archive_options
             self._archive_update_info = archive_update_info
 
@@ -206,7 +210,7 @@ class AV3LocalArchive(LocalArchive):
             assets_ws.write(dump_content)
 
     def load(self):
-        self.__load_info()
+        self.load_info()
         self.__load_archive_thread()
         self.__load_assets()
         self._loaded = True

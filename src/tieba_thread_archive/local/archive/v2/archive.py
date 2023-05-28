@@ -73,6 +73,7 @@ class AV2LocalArchive(LocalArchive):
         path: Union[str, PathLike],
         *,
         auto_load: bool = True,
+        auto_load_info: bool = True,
         auto_load_history: bool = False,
     ):
         self._update_progress = Progress()
@@ -100,6 +101,8 @@ class AV2LocalArchive(LocalArchive):
 
         if av2_validate_path(self._path) and auto_load:
             self.load()
+        if not self._loaded and auto_load_info:
+            self.load_info()
 
     @v2_absense
     def set_archive_options(self, new_archive_options):
@@ -109,13 +112,11 @@ class AV2LocalArchive(LocalArchive):
     def load_history(self):
         pass
 
-    def __load_users(self):
-        with open(self.users_file, "r", encoding="utf-8") as users_rs:
-            self.__users = av2_load_users_json(json.loads(users_rs.read()))
-
-    def __load_archive_thread(self):
+    def load_info(self):
         if not self.__users:
-            raise ValueError("__load_users needed.")
+            self.__load_users()
+
+        assert self.__users is not None
 
         with open(self.info_file, "r", encoding="utf-8") as info_rs:
             (
@@ -123,9 +124,24 @@ class AV2LocalArchive(LocalArchive):
                 archive_options,
                 archive_update_info,
             ) = av2_load_threadInfo_json(json.loads(info_rs.read()), self.__users)
+        self._thread_info = thread_info
+        self._archive_options = archive_options
+        self._archive_update_info = archive_update_info
 
-            self._archive_options = archive_options
-            self._archive_update_info = archive_update_info
+    def __load_users(self):
+        with open(self.users_file, "r", encoding="utf-8") as users_rs:
+            self.__users = av2_load_users_json(json.loads(users_rs.read()))
+
+    def __load_archive_thread(self):
+        if not self.__users:
+            self.__load_users()
+
+        if not self._thread_info or not self._archive_update_info:
+            self.load_info()
+
+        assert self.__users is not None
+        assert self._thread_info is not None
+        assert self._archive_update_info is not None
 
         with open(self.posts_file, "r", encoding="utf-8") as posts_rs:
             posts, dict_subposts = av2_load_posts_json(
@@ -133,8 +149,8 @@ class AV2LocalArchive(LocalArchive):
             )
 
         self._archive_thread = ArchiveThread(
-            archive_time=archive_update_info.archive_time,
-            thread_info=thread_info,
+            archive_time=self._archive_update_info.archive_time,
+            thread_info=self._thread_info,
             posts=posts,
             dict_subposts=dict_subposts,
             users=self.__users,
@@ -150,6 +166,7 @@ class AV2LocalArchive(LocalArchive):
 
     def load(self):
         self.__load_users()
+        self.load_info()
         self.__load_archive_thread()
         self.__load_assets()
         self._loaded = True

@@ -3,7 +3,12 @@ from os import PathLike
 from pathlib import Path
 from typing import List, Optional, Set, Union
 
-from ...models.archive import ArchiveOptions, ArchiveThread, ArchiveUpdateInfo
+from ...models.archive import (
+    ArchiveOptions,
+    ArchiveThread,
+    ArchiveUpdateInfo,
+    ThreadInfo,
+)
 from ...models.content import ContentAudio, ContentImage, ContentVideo
 from ...models.progress import Progress
 
@@ -15,6 +20,7 @@ class LocalArchive:
         "_history",
         "_history_loaded",
         "_update_progress",
+        "_thread_info",
         "_archive_options",
         "_archive_update_info",
         "_archive_thread",
@@ -28,6 +34,7 @@ class LocalArchive:
     _history: List[ArchiveThread]
     _history_loaded: bool
     _update_progress: Progress
+    _thread_info: Optional[ThreadInfo]
     _archive_options: Optional[ArchiveOptions]
     _archive_update_info: Optional[ArchiveUpdateInfo]
     _archive_thread: Optional[ArchiveThread]
@@ -54,6 +61,10 @@ class LocalArchive:
     @property
     def update_progress(self):
         return self._update_progress
+
+    @property
+    def thread_info(self):
+        return self._thread_info
 
     @property
     def archive_options(self):
@@ -84,6 +95,7 @@ class LocalArchive:
         path: Union[str, PathLike],
         *,
         auto_load: bool = True,
+        auto_load_info: bool = True,
         auto_load_history: bool = False,
     ):
         raise NotImplementedError("LocalArchive is not meant to be used directly.")
@@ -95,6 +107,9 @@ class LocalArchive:
         raise NotImplementedError("LocalArchive is not meant to be used directly.")
 
     def load(self):
+        raise NotImplementedError("LocalArchive is not meant to be used directly.")
+
+    def load_info(self):
         raise NotImplementedError("LocalArchive is not meant to be used directly.")
 
     def load_history(self):
