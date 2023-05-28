@@ -175,7 +175,7 @@ class AV2LocalArchive(LocalArchive):
         # if info.id != archive_thread.id, warning?
 
     @v2_absense
-    def dump(self):
+    def dump(self, with_assets):
         pass
 
     @v2_absense

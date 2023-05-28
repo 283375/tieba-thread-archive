@@ -103,7 +103,7 @@ class LocalArchive:
     def set_archive_options(self, new_archive_options: ArchiveOptions):
         raise NotImplementedError("LocalArchive is not meant to be used directly.")
 
-    def dump(self):
+    def dump(self, with_assets: bool = True):
         raise NotImplementedError("LocalArchive is not meant to be used directly.")
 
     def load(self):
@@ -116,4 +116,7 @@ class LocalArchive:
         raise NotImplementedError("LocalArchive is not meant to be used directly.")
 
     def update(self, new_archive_thread: ArchiveThread):
+        raise NotImplementedError("LocalArchive is not meant to be used directly.")
+
+    def download_assets(self, overwrite_exist: bool = False):
         raise NotImplementedError("LocalArchive is not meant to be used directly.")

@@ -218,11 +218,21 @@ class AV3LocalArchive(LocalArchive):
         # TODO:
         # if info.id != archive_thread.id, warning?
 
-    def dump(self):
+    def dump(self, with_assets: bool = True):
+        self._update_progress.reset()
+
+        self._update_progress.total_step = 2 if with_assets else 1
+        self._update_progress.total_progress = 4
         self.__dump_history()
+        self._update_progress += 1
         self.__dump_info()
+        self._update_progress += 1
         self.__dump_archive_thread()
+        self._update_progress += 1
         self.__dump_assets()
+        self._update_progress += 1
+        if with_assets:
+            self.download_assets()
 
     def update(self, new_archive_thread):
         # sourcery skip: extract-method
@@ -328,7 +338,10 @@ class AV3LocalArchive(LocalArchive):
             tasks = self.__executor_task_get_tasks(session)
             if tasks:
                 with futures.ThreadPoolExecutor() as executor:
-                    self._update_progress.reset()
+                    if self._update_progress.total_step == 2:
+                        self._update_progress.step += 1
+                    else:
+                        self._update_progress.reset()
                     self._update_progress.total_progress = len(tasks)
 
                     executor_tasks = [
