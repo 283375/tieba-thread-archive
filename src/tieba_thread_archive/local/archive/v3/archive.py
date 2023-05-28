@@ -210,6 +210,10 @@ class AV3LocalArchive(LocalArchive):
             assets_ws.write(dump_content)
 
     def load(self):
+        # skip if directory is empty
+        if not list(self.path.iterdir()):
+            return
+
         self.load_info()
         self.__load_archive_thread()
         self.__load_assets()
